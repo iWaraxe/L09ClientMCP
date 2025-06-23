@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "L09ClientMCP - MCP Client Demo",
-        "description": "Educational API collection for demonstrating MCP Client functionality.\n\nThis collection shows the evolution from basic chatbot to MCP-enabled AI application.\n\n**Prerequisites:**\n- Application running on localhost:8080\n- OPENAI_API_KEY environment variable set\n\n**Learning Objectives:**\n- Understand REST API design for AI applications\n- See how chatbot responses evolve with MCP integration\n- Practice API testing methodologies",
+        "description": "Educational API collection for demonstrating MCP Client functionality.\n\nThis collection shows the evolution from basic chatbot to MCP-enabled AI application.\n\n**Prerequisites:**\n- Application running on localhost:8080\n- OPENAI_API_KEY environment variable set\n- For MCP testing: Start with `mcp-stdio` profile\n\n**Branch 3 Updates:**\n- Added MCP status, tools, and invocation endpoints\n- Echo server demonstration capabilities\n- Tool discovery and testing features\n\n**Learning Objectives:**\n- Understand REST API design for AI applications\n- See how chatbot responses evolve with MCP integration\n- Practice API testing methodologies\n- Experience MCP tool discovery and invocation",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -290,6 +290,237 @@
                     "path": ["api", "chat"]
                 },
                 "description": "**Purpose:** Test the AI's ability to handle complex, multi-part questions.\n\n**What to expect:**\n- Comprehensive architectural advice\n- Multiple aspects addressed\n- Detailed technical response\n\n**Teaching Points:**\n- AI can handle complex technical discussions\n- Responses demonstrate reasoning ability\n- Shows current capabilities before MCP enhancement\n- Complex questions benefit from external data (future MCP use case)"
+            },
+            "response": []
+        },
+        {
+            "name": "MCP Status Check",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('MCP status returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response has correct structure', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('enabled');",
+                            "    pm.expect(jsonData).to.have.property('healthy');",
+                            "    pm.expect(jsonData).to.have.property('status');",
+                            "    pm.expect(jsonData).to.have.property('message');",
+                            "});",
+                            "",
+                            "// Log MCP configuration details",
+                            "const response = pm.response.json();",
+                            "console.log('🔧 MCP Enabled: ' + response.enabled);",
+                            "console.log('💚 MCP Healthy: ' + response.healthy);",
+                            "console.log('📊 MCP Status: ' + response.status);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/mcp/status",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "mcp", "status"]
+                },
+                "description": "**Purpose:** Get detailed MCP system status and configuration.\n\n**What to expect:**\n- Status: 200 OK\n- JSON response with enabled, healthy, status, message fields\n- Detailed MCP configuration information\n\n**Branch 3 Features:**\n- Shows MCP enabled/disabled state\n- Reports echo server connection status\n- Displays configuration details (type, timeout, servers)\n\n**Teaching Points:**\n- Dedicated MCP status endpoint for debugging\n- Structured JSON response for programmatic access\n- Foundation for monitoring MCP health"
+            },
+            "response": []
+        },
+        {
+            "name": "List MCP Tools",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Tools list returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response has tools array', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('tools');",
+                            "    pm.expect(jsonData.tools).to.be.an('array');",
+                            "});",
+                            "",
+                            "// Log available tools",
+                            "const response = pm.response.json();",
+                            "console.log('🛠️  Available Tools: ' + response.count);",
+                            "if (response.tools && response.tools.length > 0) {",
+                            "    response.tools.forEach(tool => {",
+                            "        console.log('  - ' + tool.name + ': ' + tool.description);",
+                            "    });",
+                            "} else {",
+                            "    console.log('  No tools available (MCP may be disabled)');",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/mcp/tools",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "mcp", "tools"]
+                },
+                "description": "**Purpose:** Discover available MCP tools and their schemas.\n\n**What to expect:**\n- Status: 200 OK\n- JSON array of available tools with names, descriptions, and input schemas\n- Tool count and status message\n\n**Branch 3 Features:**\n- Lists echo and ping tools when MCP enabled\n- Shows empty list when MCP disabled\n- Includes tool input schema for validation\n\n**Teaching Points:**\n- Tool discovery is fundamental to MCP\n- Schema-driven tool invocation\n- Dynamic capability exploration"
+            },
+            "response": []
+        },
+        {
+            "name": "MCP Ping Test",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Ping returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Ping response has success field', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('success');",
+                            "});",
+                            "",
+                            "// Log ping result",
+                            "const response = pm.response.json();",
+                            "if (response.success) {",
+                            "    console.log('🏓 Ping successful: ' + response.message);",
+                            "    if (response.metadata && response.metadata.timestamp) {",
+                            "        const timestamp = new Date(response.metadata.timestamp);",
+                            "        console.log('⏰ Server timestamp: ' + timestamp.toISOString());",
+                            "    }",
+                            "} else {",
+                            "    console.log('❌ Ping failed: ' + response.message);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/mcp/ping",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "mcp", "ping"]
+                },
+                "description": "**Purpose:** Quick connectivity test for MCP echo server.\n\n**What to expect:**\n- Status: 200 OK\n- JSON response with success flag and 'pong' message\n- Timestamp metadata when successful\n\n**Branch 3 Features:**\n- Simple ping/pong functionality\n- Returns failure message when MCP disabled\n- Includes server timestamp for latency testing\n\n**Teaching Points:**\n- Basic tool invocation pattern\n- Connection verification technique\n- Metadata usage in tool responses"
+            },
+            "response": []
+        },
+        {
+            "name": "Echo Tool - Basic",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Echo tool returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Echo response has expected structure', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('success');",
+                            "    pm.expect(jsonData).to.have.property('content');",
+                            "    pm.expect(jsonData).to.have.property('tool');",
+                            "});",
+                            "",
+                            "// Log echo result",
+                            "const response = pm.response.json();",
+                            "if (response.success) {",
+                            "    console.log('📢 Echo result: ' + response.content);",
+                            "    if (response.metadata) {",
+                            "        console.log('🔧 Original: ' + response.metadata.original_message);",
+                            "        console.log('🎨 Format: ' + response.metadata.format_applied);",
+                            "    }",
+                            "} else {",
+                            "    console.log('❌ Echo failed: ' + response.content);",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Hello from Postman!\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/mcp/tools/echo/invoke",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "mcp", "tools", "echo", "invoke"]
+                },
+                "description": "**Purpose:** Test basic echo tool functionality.\n\n**What to expect:**\n- Status: 200 OK\n- JSON response with echoed message\n- Tool execution metadata\n\n**Branch 3 Features:**\n- Direct tool invocation via REST API\n- Message echoing with optional formatting\n- Detailed execution metadata\n\n**Teaching Points:**\n- Tool invocation patterns\n- Argument passing to MCP tools\n- Response structure and metadata\n\n**Try Different Messages:**\n- Change the message in the request body\n- Test with empty messages\n- Try special characters"
+            },
+            "response": []
+        },
+        {
+            "name": "Echo Tool - Uppercase",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Echo uppercase returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Message is transformed to uppercase', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    if (jsonData.success) {",
+                            "        pm.expect(jsonData.content).to.include('HELLO WORLD');",
+                            "    }",
+                            "});",
+                            "",
+                            "// Log transformation result",
+                            "const response = pm.response.json();",
+                            "console.log('🔤 Uppercase transformation: ' + response.content);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Hello World\",\n    \"format\": \"uppercase\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/mcp/tools/echo/invoke",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "mcp", "tools", "echo", "invoke"]
+                },
+                "description": "**Purpose:** Test echo tool with text transformation.\n\n**What to expect:**\n- Status: 200 OK\n- Message transformed to uppercase\n- Format metadata showing transformation applied\n\n**Branch 3 Features:**\n- Text transformation capabilities\n- Multiple format options (uppercase, lowercase, reverse)\n- Format parameter validation\n\n**Teaching Points:**\n- Tool parameters and options\n- Data transformation in MCP tools\n- Configurable tool behavior\n\n**Other Formats to Try:**\n- \"lowercase\" - converts to lowercase\n- \"reverse\" - reverses the string\n- No format - returns original message"
             },
             "response": []
         }

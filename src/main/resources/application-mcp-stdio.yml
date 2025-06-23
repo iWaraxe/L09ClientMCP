@@ -1,4 +1,4 @@
-# Profile for MCP with STDIO transport (for development and simple MCP servers)
+# Profile for MCP with STDIO transport and Echo Server (Branch 3)
 spring:
   ai:
     mcp:
@@ -7,9 +7,13 @@ spring:
         type: STDIO
         request-timeout: 30s
         stdio:
-          # Configuration for STDIO-based MCP servers
-          # Servers will be configured here when we implement them
-          servers: {}
+          # Mock Echo Server Configuration
+          # This demonstrates the structure for future real MCP servers
+          servers:
+            echo-server:
+              # Mock server - handled internally, no external process
+              enabled: true
+              description: "Mock echo server for educational demonstrations"
         
 # Enhanced logging for MCP development
 logging:

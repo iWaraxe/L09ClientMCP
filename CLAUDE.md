@@ -249,3 +249,7 @@ This project is part of a teaching progression:
 - Lecture 11: Final project combining voice, RAG, and MCP
 
 The goal is to demonstrate how AI applications evolve from isolated tools to interconnected ecosystems using standardized protocols.
+
+## Postman Collection Management
+
+- **Workflow Recommendation**: Do not update L09ClientMCP.postman_collection.json rather create new document for each new branch, and I'll move from collection to collection in Postman while I move from branch to branch in the project
