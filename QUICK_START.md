@@ -14,16 +14,19 @@ export OPENAI_API_KEY=your-openai-api-key-here
 
 ### 2. Start the Application
 ```bash
-# Default configuration (gpt-4o-mini)
+# Default configuration (MCP disabled, gpt-4o-mini)
 ./mvnw spring-boot:run
 
-# OR use different model profiles:
+# OR use different profiles:
 
-# For training demos (faster, cheaper)
-./mvnw spring-boot:run -Dspring.profiles.active=demo
+# Model profiles:
+./mvnw spring-boot:run -Dspring.profiles.active=demo    # Fast, cheap model
+./mvnw spring-boot:run -Dspring.profiles.active=gpt4   # High accuracy model
 
-# For high accuracy (slower, more expensive)
-./mvnw spring-boot:run -Dspring.profiles.active=gpt4
+# MCP profiles (Branch 2+):
+./mvnw spring-boot:run -Dspring.profiles.active=mcp-disabled  # Explicitly disable MCP
+./mvnw spring-boot:run -Dspring.profiles.active=mcp-stdio     # MCP with STDIO transport
+./mvnw spring-boot:run -Dspring.profiles.active=mcp-sse       # MCP with SSE transport
 ```
 
 ### 3. Verify It's Running
@@ -36,7 +39,9 @@ Started L09ClientMcpApplication in X.XXX seconds (JVM running for Y.YYY)
 ```bash
 curl http://localhost:8080/api/chat/health
 ```
-Expected response: `Chat service is running`
+Expected responses:
+- Default: `Chat service is running. MCP: healthy (MCP disabled - running in baseline mode)`
+- MCP enabled: `Chat service is running. MCP: healthy (MCP enabled - Type: STDIO, Timeout: 30s, Servers: none configured)`
 
 ## 🧪 Testing with curl
 

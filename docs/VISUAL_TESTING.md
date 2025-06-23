@@ -142,9 +142,20 @@ Encourage students to:
 
 ### 3. Before/After Comparisons
 Use the collection to show evolution:
-- **Baseline**: Current AI-only responses
-- **Future**: Enhanced responses with MCP tools
-- **Comparison**: Side-by-side improvements
+- **Branch 1 (Baseline)**: AI-only responses, simple health check
+- **Branch 2 (MCP Setup)**: Same chat functionality but with MCP infrastructure awareness
+- **Future Branches**: Enhanced responses with actual MCP tools
+- **Comparison**: Side-by-side improvements across branches
+
+#### Branch 2 Specific Changes:
+**Health Endpoint Evolution:**
+- **Before**: `"Chat service is running"`
+- **After**: `"Chat service is running. MCP: healthy (MCP disabled - running in baseline mode)"`
+
+**New Demo Opportunities:**
+- Show MCP profile switching: Start with default, restart with `mcp-stdio` profile
+- Demonstrate infrastructure monitoring: Health endpoint now shows system architecture
+- Explain configuration flexibility: Same code, different deployment modes
 
 ### 4. Real-World Scenarios
 Connect to practical applications:

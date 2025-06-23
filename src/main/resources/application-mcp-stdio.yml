@@ -1,0 +1,19 @@
+# Profile for MCP with STDIO transport (for development and simple MCP servers)
+spring:
+  ai:
+    mcp:
+      client:
+        enabled: true
+        type: STDIO
+        request-timeout: 30s
+        stdio:
+          # Configuration for STDIO-based MCP servers
+          # Servers will be configured here when we implement them
+          servers: {}
+        
+# Enhanced logging for MCP development
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: DEBUG
+    org.springframework.ai: DEBUG
+    org.springframework.ai.mcp: TRACE  # Detailed MCP protocol logging

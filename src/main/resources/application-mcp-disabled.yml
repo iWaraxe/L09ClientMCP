@@ -1,0 +1,12 @@
+# Profile for explicitly disabling MCP (useful for testing and baseline comparison)
+spring:
+  ai:
+    mcp:
+      client:
+        enabled: false
+        
+# Standard logging when MCP is disabled
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: INFO
+    org.springframework.ai: INFO

@@ -2,6 +2,7 @@ package com.coherentsolutions.l09clientmcp.controller;
 
 import com.coherentsolutions.l09clientmcp.model.ChatRequest;
 import com.coherentsolutions.l09clientmcp.service.ChatService;
+import com.coherentsolutions.l09clientmcp.service.McpClientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +31,14 @@ class ChatControllerTest {
 
     @Autowired
     private ChatService chatService;
+    
+    @Autowired
+    private McpClientService mcpClientService;
 
     /**
-     * Test configuration that provides a mock ChatService bean.
+     * Test configuration that provides mock service beans.
      * This replaces the deprecated @MockBean approach with a cleaner
-     * TestConfiguration pattern that creates a Mockito mock as a Spring bean.
+     * TestConfiguration pattern that creates Mockito mocks as Spring beans.
      */
     @TestConfiguration
     static class TestConfig {
@@ -43,13 +47,23 @@ class ChatControllerTest {
         public ChatService chatService() {
             return mock(ChatService.class);
         }
+        
+        @Bean
+        @Primary
+        public McpClientService mcpClientService() {
+            return mock(McpClientService.class);
+        }
     }
 
     @Test
     void testHealthEndpoint() throws Exception {
+        // Setup mock behavior for MCP service
+        when(mcpClientService.isHealthy()).thenReturn(true);
+        when(mcpClientService.getStatus()).thenReturn("MCP disabled - running in baseline mode");
+        
         mockMvc.perform(get("/api/chat/health"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Chat service is running"));
+                .andExpect(content().string("Chat service is running. MCP: healthy (MCP disabled - running in baseline mode)"));
     }
 
     @Test

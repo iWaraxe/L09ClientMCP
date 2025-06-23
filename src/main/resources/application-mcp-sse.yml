@@ -1,0 +1,19 @@
+# Profile for MCP with SSE transport (for production-ready HTTP-based MCP servers)
+spring:
+  ai:
+    mcp:
+      client:
+        enabled: true
+        type: SSE
+        request-timeout: 30s
+        sse:
+          # Configuration for SSE-based MCP servers  
+          # Servers will be configured here when we implement them
+          connections: {}
+          
+# Production-appropriate logging for SSE
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: INFO
+    org.springframework.ai: INFO
+    org.springframework.ai.mcp: DEBUG  # MCP protocol logging

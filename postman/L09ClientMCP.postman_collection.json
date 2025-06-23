@@ -20,7 +20,20 @@
                             "    pm.expect(pm.response.text()).to.include('Chat service is running');",
                             "});",
                             "",
-                            "console.log('✅ Service is healthy and ready for chat requests');"
+                            "pm.test('Response includes MCP status', function () {",
+                            "    pm.expect(pm.response.text()).to.include('MCP:');",
+                            "});",
+                            "",
+                            "// Extract and log MCP status for educational purposes",
+                            "const responseText = pm.response.text();",
+                            "const mcpMatch = responseText.match(/MCP: (\\w+) \\(([^)]+)\\)/);",
+                            "if (mcpMatch) {",
+                            "    console.log('✅ Service is healthy and ready for chat requests');",
+                            "    console.log('🔧 MCP Status: ' + mcpMatch[1] + ' - ' + mcpMatch[2]);",
+                            "} else {",
+                            "    console.log('✅ Service is healthy and ready for chat requests');",
+                            "    console.log('ℹ️  MCP status format may have changed');",
+                            "}"
                         ],
                         "type": "text/javascript"
                     }
@@ -34,7 +47,7 @@
                     "host": ["{{baseUrl}}"],
                     "path": ["api", "chat", "health"]
                 },
-                "description": "**Purpose:** Verify the application is running and healthy.\n\n**What to expect:**\n- Status: 200 OK\n- Response: \"Chat service is running\"\n\n**Teaching Points:**\n- Health checks are essential for monitoring\n- Simple endpoints help verify deployment\n- Foundation for more complex API testing"
+                "description": "**Purpose:** Verify the application is running and healthy.\n\n**What to expect:**\n- Status: 200 OK\n- Response: \"Chat service is running. MCP: healthy (status details)\"\n\n**Branch 2+ Changes:**\n- Now includes MCP (Model Context Protocol) status\n- Shows whether MCP is enabled/disabled\n- Displays MCP configuration details\n\n**Teaching Points:**\n- Health checks are essential for monitoring\n- MCP status helps debug configuration issues\n- Foundation for more complex API testing\n- Shows system architecture evolution"
             },
             "response": []
         },
