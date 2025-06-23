@@ -1,0 +1,437 @@
+{
+    "info": {
+        "name": "L09ClientMCP - Branch 4: Chat-Tool Integration",
+        "description": "Educational API collection for demonstrating MCP Chat-Tool Integration functionality.\n\nThis collection showcases how chat conversations can automatically invoke MCP tools when appropriate.\n\n**Prerequisites:**\n- Application running on localhost:8080\n- OPENAI_API_KEY environment variable set\n- Start with `mcp-stdio` profile for MCP tool integration\n\n**Branch 4 Features:**\n- Chat requests that trigger MCP tool usage\n- Automatic tool detection from user messages\n- Tool result integration into conversation responses\n- Graceful fallback when tools unavailable\n\n**Learning Objectives:**\n- Experience AI-driven tool selection\n- See tool results integrated into natural conversation\n- Understand chat-tool integration patterns\n- Compare tool-enhanced vs standard responses",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Health Check - MCP Integration Status",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Health check returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response contains expected message', function () {",
+                            "    pm.expect(pm.response.text()).to.include('Chat service is running');",
+                            "});",
+                            "",
+                            "pm.test('Response includes MCP status', function () {",
+                            "    pm.expect(pm.response.text()).to.include('MCP:');",
+                            "});",
+                            "",
+                            "// Extract and log MCP status for educational purposes",
+                            "const responseText = pm.response.text();",
+                            "const mcpMatch = responseText.match(/MCP: (\\w+) \\(([^)]+)\\)/);",
+                            "if (mcpMatch) {",
+                            "    console.log('✅ Chat service is healthy');",
+                            "    console.log('🔧 MCP Status: ' + mcpMatch[1] + ' - ' + mcpMatch[2]);",
+                            "    if (mcpMatch[1] === 'enabled') {",
+                            "        console.log('🛠️  Tool integration is active - chat can use MCP tools');",
+                            "    } else {",
+                            "        console.log('📵 Tool integration disabled - chat uses standard AI only');",
+                            "    }",
+                            "} else {",
+                            "    console.log('✅ Chat service is healthy');",
+                            "    console.log('ℹ️  MCP status format may have changed');",
+                            "}"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat/health",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat", "health"]
+                },
+                "description": "**Purpose:** Verify the application and MCP integration status.\n\n**What to expect:**\n- Status: 200 OK\n- Response includes MCP integration status\n- Tool availability information\n\n**Branch 4 Focus:**\n- Check if chat-tool integration is active\n- Verify MCP tools are available for chat usage\n- Foundation for testing tool-enhanced conversations"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Echo Tool Request",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Chat request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response has correct structure', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('response');",
+                            "    pm.expect(jsonData.response).to.be.a('string');",
+                            "});",
+                            "",
+                            "pm.test('Response indicates tool usage', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    // Should mention using the echo tool",
+                            "    pm.expect(response).to.include('echo tool');",
+                            "});",
+                            "",
+                            "pm.test('Response contains echoed message', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    // Should contain the echoed text",
+                            "    pm.expect(response).to.include('Hello from Branch 4');",
+                            "});",
+                            "",
+                            "console.log('🤖 Tool-Enhanced Response:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"echo Hello from Branch 4!\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test automatic echo tool invocation through chat.\n\n**What to expect:**\n- Chat detects echo request in user message\n- Automatically invokes MCP echo tool\n- Returns tool result integrated into conversation\n\n**Branch 4 Features:**\n- Tool detection from natural language\n- Automatic tool invocation\n- Tool result integration into chat response\n\n**Teaching Points:**\n- No direct API calls to tools needed\n- Chat intelligence handles tool selection\n- Natural conversation flow maintained"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Echo with Uppercase Formatting",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Uppercase echo request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response mentions uppercase formatting', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    pm.expect(response).to.include('uppercase');",
+                            "});",
+                            "",
+                            "pm.test('Response contains uppercase result', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    // Should contain uppercase version",
+                            "    pm.expect(response).to.include('HELLO WORLD');",
+                            "});",
+                            "",
+                            "console.log('🔤 Formatted Echo Response:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Please echo 'Hello World' in uppercase\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test echo tool with formatting through chat.\n\n**What to expect:**\n- Chat detects echo request with formatting instruction\n- Automatically invokes echo tool with uppercase parameter\n- Returns formatted result in conversational response\n\n**Branch 4 Features:**\n- Parameter extraction from natural language\n- Tool configuration from chat context\n- Formatted tool results in conversation\n\n**Try Other Formats:**\n- \"echo 'test' in lowercase\"\n- \"echo 'hello' reverse\"\n- \"echo back 'message' uppercase\""
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Ping Tool Request",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Ping request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response mentions ping tool', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    pm.expect(response).to.include('ping tool');",
+                            "});",
+                            "",
+                            "pm.test('Response indicates connectivity test', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    pm.expect(response).to.include('connectivity');",
+                            "});",
+                            "",
+                            "console.log('🏓 Ping Tool Response:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Can you ping the MCP server to test connectivity?\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test ping tool invocation through conversational request.\n\n**What to expect:**\n- Chat detects connectivity test request\n- Automatically invokes MCP ping tool\n- Returns connectivity status in natural language\n\n**Branch 4 Features:**\n- Intent recognition from user message\n- No-parameter tool invocation\n- Diagnostic information in conversation format\n\n**Alternative Requests:**\n- \"ping the server\"\n- \"test connection\"\n- \"check MCP status\""
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Standard AI Response (No Tools)",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Standard chat successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response is conversational AI', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    // Should NOT mention tools for this question",
+                            "    pm.expect(response).to.not.include('echo tool');",
+                            "    pm.expect(response).to.not.include('ping tool');",
+                            "});",
+                            "",
+                            "pm.test('Response discusses weather appropriately', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    // Should mention weather or acknowledge the question",
+                            "    const hasWeatherResponse = response.includes('weather') || ",
+                            "                               response.includes('temperature') ||",
+                            "                               response.includes('forecast') ||",
+                            "                               response.includes('climate');",
+                            "    pm.expect(hasWeatherResponse).to.be.true;",
+                            "});",
+                            "",
+                            "console.log('🌤️ Standard AI Response:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"What's the weather like today?\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test that non-tool requests use standard AI responses.\n\n**What to expect:**\n- Chat processes request normally\n- No MCP tools invoked\n- Standard AI knowledge response\n\n**Branch 4 Comparison:**\n- Shows selective tool usage\n- Demonstrates intelligent tool detection\n- Proves tools don't interfere with normal chat\n\n**Teaching Points:**\n- Tools enhance but don't replace AI capabilities\n- Automatic tool selection based on request type\n- Seamless integration preserves normal chat flow"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Tool Request When MCP Disabled",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Chat request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response handles echo request gracefully', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    // Should provide helpful response even without tools",
+                            "    pm.expect(response.length).to.be.greaterThan(10);",
+                            "});",
+                            "",
+                            "console.log('🔄 Fallback Response (No MCP):');",
+                            "console.log(pm.response.json().response);",
+                            "console.log('ℹ️  Note: Start with mcp-stdio profile to enable tool integration');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"echo Testing graceful degradation\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test graceful degradation when MCP tools unavailable.\n\n**What to expect (MCP disabled):**\n- Chat request succeeds\n- Standard AI response provided\n- No tool functionality, but helpful explanation\n\n**What to expect (MCP enabled):**\n- Automatic tool invocation\n- Tool result integrated into response\n\n**Branch 4 Features:**\n- Graceful degradation patterns\n- Conditional tool usage based on availability\n- Consistent user experience regardless of tool status\n\n**Demo Instructions:**\n- Test with default profile (MCP disabled)\n- Test with mcp-stdio profile (MCP enabled)\n- Compare response differences"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Complex Echo with Quoted Text",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Complex echo successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response handles quoted text extraction', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    // Should extract and echo the quoted text",
+                            "    pm.expect(response).to.include('Branch 4 Integration Test!');",
+                            "});",
+                            "",
+                            "pm.test('Response shows lowercase formatting', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    // Should show lowercase result",
+                            "    pm.expect(response).to.include('branch 4 integration test!');",
+                            "});",
+                            "",
+                            "console.log('📝 Complex Echo Processing:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Please echo back \\\"Branch 4 Integration Test!\\\" in lowercase\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test sophisticated message parsing and tool parameter extraction.\n\n**What to expect:**\n- Chat extracts quoted text from user message\n- Identifies formatting instruction (lowercase)\n- Invokes echo tool with correct parameters\n- Returns properly formatted result\n\n**Branch 4 Advanced Features:**\n- Complex natural language parsing\n- Multi-parameter tool invocation\n- Quoted text extraction\n- Format instruction recognition\n\n**Educational Value:**\n- Shows intelligence of chat-tool integration\n- Demonstrates natural language to API translation\n- Illustrates parameter extraction complexity"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Error Handling Test",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Error handling successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response handles tool error gracefully', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    // Should mention tool usage and error",
+                            "    const hasErrorHandling = response.includes('error') || ",
+                            "                            response.includes('tried') ||",
+                            "                            response.includes('attempted') ||",
+                            "                            response.includes('echo tool');",
+                            "    pm.expect(hasErrorHandling).to.be.true;",
+                            "});",
+                            "",
+                            "console.log('⚠️ Error Handling Response:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"echo \\\"\\\"\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test error handling when tool execution fails.\n\n**What to expect:**\n- Chat detects echo request\n- Tool invocation fails (empty message)\n- Graceful error response provided\n- User-friendly error explanation\n\n**Branch 4 Error Handling:**\n- Tool errors don't crash the chat\n- Clear error communication to user\n- Maintains conversational tone even during errors\n- Provides context about what was attempted\n\n**Teaching Points:**\n- Robust error handling in AI applications\n- User experience during tool failures\n- Error transparency vs. technical details"
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "description": "Base URL for the L09ClientMCP application"
+        }
+    ]
+}
