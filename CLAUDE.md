@@ -151,9 +151,9 @@ spring:
 ## Course Context
 
 This project is part of a teaching progression:
-- Week 1-8: Basic Spring AI concepts (completed)
-- Week 9: MCP Client implementation (this project)
-- Week 10: MCP Server implementation
-- Week 11: Final project combining voice, RAG, and MCP
+- Lectures 1-8: Basic Spring AI concepts (completed)
+- Lecture 9: MCP Client implementation (this project)
+- Lecture 10: MCP Server implementation
+- Lecture 11: Final project combining voice, RAG, and MCP
 
 The goal is to demonstrate how AI applications evolve from isolated tools to interconnected ecosystems using standardized protocols.
