@@ -4,6 +4,7 @@ import com.coherentsolutions.l09clientmcp.function.EchoFunction;
 import com.coherentsolutions.l09clientmcp.function.PingFunction;
 import com.coherentsolutions.l09clientmcp.mcp.MockMcpEchoServer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,19 +18,21 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
  * Integration tests for ChatService with MCP tool functionality.
- * Branch 4: Tests chat-tool integration patterns and tool detection.
+ * Branch 5: Originally tested manual tool detection patterns.
+ * Branch 6: These tests are disabled as manual tool detection was replaced with Spring AI function integration.
  * 
  * Educational Focus:
- * - Tool detection within chat conversations
- * - Integration between chat and MCP tools
- * - Error handling for tool failures during chat
- * - Graceful degradation when MCP unavailable
+ * - Legacy manual tool detection patterns (replaced in Branch 6)
+ * - Evolution from manual to automatic function calling
+ * - Historical perspective on chat-tool integration approaches
  */
 @ExtendWith(MockitoExtension.class)
+@Disabled("Branch 6: Manual tool detection replaced with Spring AI function integration - see ChatServiceBranch6Test for current functionality")
 class ChatServiceIntegrationTest {
 
     @Mock
@@ -72,26 +75,25 @@ class ChatServiceIntegrationTest {
         // Create chat service
         chatService = new ChatService(chatClient, mcpClientService, functionRegistry);
         
-        // Setup mock chain (lenient to avoid unnecessary stubbing warnings)
-        lenient().when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
-        lenient().when(requestSpec.call()).thenReturn(callSpec);
-        lenient().when(callSpec.content()).thenReturn("Standard AI response");
+        // Note: These tests demonstrate legacy behavior from Branch 5
+        // In Branch 6, manual tool detection was replaced with Spring AI function integration
+        // For now, these tests are disabled to focus on new functionality
     }
 
     @Test
+    @Disabled("Branch 6: Manual tool detection replaced with Spring AI function awareness")
     void testEchoRequestDetectionAndExecution() {
-        // Test echo request detection and tool usage
+        // Branch 6 Update: Manual tool detection replaced with Spring AI function awareness
         String userMessage = "echo Hello World";
         
         String response = chatService.chat(userMessage);
         
         assertNotNull(response);
-        assertTrue(response.contains("I used the echo tool"));
-        assertTrue(response.contains("Hello World"));
-        assertTrue(response.contains("**Format Applied:** none"));
+        // In Branch 6, this now generates standard AI response with function awareness
+        assertEquals("Standard AI response", response);
         
-        // Verify AI wasn't called since tool handled the request
-        verify(chatClient, never()).prompt(any(Prompt.class));
+        // Verify AI was called with function-aware system message
+        verify(chatClient, times(1)).prompt();
     }
 
     @Test

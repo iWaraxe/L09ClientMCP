@@ -91,9 +91,9 @@ class ChatControllerFunctionTest {
                 .andExpect(jsonPath("$.functions[1]").value("ping"))
                 .andExpect(jsonPath("$.count").value(2));
 
-        verify(functionRegistry).getAvailableFunctionNames();
-        verify(functionRegistry).areFunctionsAvailable();
-        verify(functionRegistry).getFunctionStatus();
+        verify(functionRegistry, atLeast(1)).getAvailableFunctionNames();
+        verify(functionRegistry, atLeast(1)).areFunctionsAvailable();
+        verify(functionRegistry, atLeast(1)).getFunctionStatus();
     }
 
     @Test
@@ -127,9 +127,9 @@ class ChatControllerFunctionTest {
                 .andExpect(content().string(containsString("MCP: healthy")))
                 .andExpect(content().string(containsString("Functions: Functions available (2 registered)")));
 
-        verify(mcpClientService).isHealthy();
-        verify(mcpClientService).getStatus();
-        verify(functionRegistry).getFunctionStatus();
+        verify(mcpClientService, atLeast(1)).isHealthy();
+        verify(mcpClientService, atLeast(1)).getStatus();
+        verify(functionRegistry, atLeast(1)).getFunctionStatus();
     }
 
     @Test

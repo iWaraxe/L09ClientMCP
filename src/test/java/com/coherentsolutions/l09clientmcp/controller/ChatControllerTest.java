@@ -2,6 +2,7 @@ package com.coherentsolutions.l09clientmcp.controller;
 
 import com.coherentsolutions.l09clientmcp.model.ChatRequest;
 import com.coherentsolutions.l09clientmcp.service.ChatService;
+import com.coherentsolutions.l09clientmcp.service.FunctionRegistry;
 import com.coherentsolutions.l09clientmcp.service.McpClientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class ChatControllerTest {
     
     @Autowired
     private McpClientService mcpClientService;
+    
+    @Autowired
+    private FunctionRegistry functionRegistry;
 
     /**
      * Test configuration that provides mock service beans.
@@ -53,17 +57,24 @@ class ChatControllerTest {
         public McpClientService mcpClientService() {
             return mock(McpClientService.class);
         }
+        
+        @Bean
+        @Primary
+        public FunctionRegistry functionRegistry() {
+            return mock(FunctionRegistry.class);
+        }
     }
 
     @Test
     void testHealthEndpoint() throws Exception {
-        // Setup mock behavior for MCP service
+        // Setup mock behavior for MCP service and function registry
         when(mcpClientService.isHealthy()).thenReturn(true);
         when(mcpClientService.getStatus()).thenReturn("MCP disabled - running in baseline mode");
+        when(functionRegistry.getFunctionStatus()).thenReturn("Functions disabled (MCP disabled)");
         
         mockMvc.perform(get("/api/chat/health"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Chat service is running. MCP: healthy (MCP disabled - running in baseline mode)"));
+                .andExpect(content().string("Chat service is running. MCP: healthy (MCP disabled - running in baseline mode). Functions: Functions disabled (MCP disabled)"));
     }
 
     @Test
