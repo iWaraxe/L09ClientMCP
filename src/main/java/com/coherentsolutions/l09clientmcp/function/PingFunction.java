@@ -64,10 +64,10 @@ public class PingFunction implements Function<PingFunction.Request, PingFunction
             McpToolResult result = mcpClientService.invokeTool("ping", new HashMap<>());
             
             if (result.isSuccess()) {
-                String timestamp = result.getMetadata() != null ? 
-                    (String) result.getMetadata().get("timestamp") : null;
-                String serverType = result.getMetadata() != null ? 
-                    (String) result.getMetadata().get("server_type") : "unknown";
+                String timestamp = result.getMetadata() != null && result.getMetadata().get("timestamp") != null ? 
+                    String.valueOf(result.getMetadata().get("timestamp")) : null;
+                String serverType = result.getMetadata() != null && result.getMetadata().get("server_type") != null ? 
+                    String.valueOf(result.getMetadata().get("server_type")) : "unknown";
                 
                 log.info("Ping successful: {}", result.getContent());
                 

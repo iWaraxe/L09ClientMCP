@@ -76,7 +76,7 @@ public class EchoFunction implements Function<EchoFunction.Request, EchoFunction
             
             if (result.isSuccess()) {
                 String formatApplied = result.getMetadata() != null ? 
-                    (String) result.getMetadata().get("format_applied") : "none";
+                    (String) result.getMetadata().get("format_applied") : null;
                 
                 log.info("Echo tool succeeded: '{}' -> '{}'", request.message(), result.getContent());
                 

@@ -10,6 +10,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.context.ApplicationContext;
+
+import java.util.Map;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,13 +61,21 @@ class ChatServiceIntegrationTest {
         echoFunction = new EchoFunction(mcpClientService);
         pingFunction = new PingFunction(mcpClientService);
         
-        // Create chat service
-        chatService = new ChatService(chatClient, mcpClientService, echoFunction, pingFunction);
+        // Create function registry
+        ApplicationContext applicationContext = mock(ApplicationContext.class);
+        when(applicationContext.getBeansOfType(Function.class)).thenReturn(Map.of(
+            "echoFunction", echoFunction,
+            "pingFunction", pingFunction
+        ));
+        FunctionRegistry functionRegistry = new FunctionRegistry(applicationContext, mcpClientService);
         
-        // Setup mock chain
-        when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(callSpec);
-        when(callSpec.content()).thenReturn("Standard AI response");
+        // Create chat service
+        chatService = new ChatService(chatClient, mcpClientService, functionRegistry);
+        
+        // Setup mock chain (lenient to avoid unnecessary stubbing warnings)
+        lenient().when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
+        lenient().when(requestSpec.call()).thenReturn(callSpec);
+        lenient().when(callSpec.content()).thenReturn("Standard AI response");
     }
 
     @Test
@@ -76,7 +88,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("Hello World"));
-        assertTrue(response.contains("Format Applied: none"));
+        assertTrue(response.contains("**Format Applied:** none"));
         
         // Verify AI wasn't called since tool handled the request
         verify(chatClient, never()).prompt(any(Prompt.class));
@@ -91,7 +103,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("HELLO WORLD"));
-        assertTrue(response.contains("Format Applied: uppercase"));
+        assertTrue(response.contains("**Format Applied:** uppercase"));
     }
 
     @Test
@@ -103,7 +115,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("testing"));
-        assertTrue(response.contains("Format Applied: lowercase"));
+        assertTrue(response.contains("**Format Applied:** lowercase"));
     }
 
     @Test
@@ -115,7 +127,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("olleh"));
-        assertTrue(response.contains("Format Applied: reverse"));
+        assertTrue(response.contains("**Format Applied:** reverse"));
     }
 
     @Test
@@ -161,7 +173,13 @@ class ChatServiceIntegrationTest {
     void testMcpDisabledFallsBackToAI() {
         // Create service with MCP disabled
         McpClientService disabledMcpService = new McpClientServiceImpl(false, "STDIO", "30s", echoServer);
-        ChatService disabledChatService = new ChatService(chatClient, disabledMcpService, echoFunction, pingFunction);
+        
+        // Create disabled function registry
+        ApplicationContext disabledContext = mock(ApplicationContext.class);
+        when(disabledContext.getBeansOfType(Function.class)).thenReturn(Map.of());
+        FunctionRegistry disabledFunctionRegistry = new FunctionRegistry(disabledContext, disabledMcpService);
+        
+        ChatService disabledChatService = new ChatService(chatClient, disabledMcpService, disabledFunctionRegistry);
         
         String userMessage = "echo Hello World";
         
