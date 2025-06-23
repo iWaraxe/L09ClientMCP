@@ -9,7 +9,7 @@ spring:
       # Model configuration - you can change this to test different models
       chat:
         options:
-          model: gpt-4o-mini  # Alternative: gpt-4o, gpt-3.5-turbo
+          model: gpt-4.1  # Alternative: gpt-4o, gpt-4o-mini, gpt-3.5-turbo
           temperature: 0.7
           max-tokens: 1000
         
