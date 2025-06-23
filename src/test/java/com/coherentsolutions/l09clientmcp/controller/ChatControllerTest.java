@@ -6,11 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,8 +28,22 @@ class ChatControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     private ChatService chatService;
+
+    /**
+     * Test configuration that provides a mock ChatService bean.
+     * This replaces the deprecated @MockBean approach with a cleaner
+     * TestConfiguration pattern that creates a Mockito mock as a Spring bean.
+     */
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public ChatService chatService() {
+            return mock(ChatService.class);
+        }
+    }
 
     @Test
     void testHealthEndpoint() throws Exception {

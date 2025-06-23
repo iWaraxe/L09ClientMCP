@@ -265,7 +265,25 @@ class ChatControllerTest {
 
 ### WHY Mock the Service?
 
-**Decision**: Mock `ChatService` in controller tests
+**Decision**: Mock `ChatService` in controller tests using `@TestConfiguration`
+
+**Code Pattern**:
+```java
+@TestConfiguration
+static class TestConfig {
+    @Bean
+    @Primary
+    public ChatService chatService() {
+        return mock(ChatService.class);
+    }
+}
+```
+
+**WHY This Approach vs @MockBean?**:
+- **Modern Spring Boot**: `@MockBean` is deprecated since 3.4.0
+- **Cleaner Integration**: Uses standard Spring bean configuration
+- **More Explicit**: Clear about creating a mock bean
+- **Future-Proof**: Aligns with Spring Boot evolution
 
 **Rationale**:
 - **Unit Testing**: Tests controller logic, not AI integration

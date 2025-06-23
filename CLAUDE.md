@@ -114,10 +114,25 @@ spring:
 - Proper error handling with try-catch blocks
 
 ### Testing Approach
-- WebMvcTest for controllers
-- Mock external dependencies
+- WebMvcTest for controllers with @TestConfiguration for mocks
+- Use @TestConfiguration + @Primary + mock() instead of deprecated @MockBean
+- Mock external dependencies (services, not Spring AI directly)
 - Test both success and error scenarios
 - Integration tests in later branches for MCP connections
+
+### Modern Testing Pattern
+```java
+@WebMvcTest(ControllerClass.class)
+class ControllerTest {
+    @TestConfiguration
+    static class TestConfig {
+        @Bean @Primary
+        public ServiceClass serviceClass() {
+            return mock(ServiceClass.class);
+        }
+    }
+}
+```
 
 ## API Endpoints
 
