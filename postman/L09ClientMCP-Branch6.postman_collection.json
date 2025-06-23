@@ -1,0 +1,461 @@
+{
+	"info": {
+		"_postman_id": "9d4e8c7f-2a1b-4c3d-8e5f-1a2b3c4d5e6f",
+		"name": "L09ClientMCP - Branch 6: Function Integration",
+		"description": "Branch 6: Spring AI Function Integration for MCP Chat Tools\n\nThis collection demonstrates the evolution from manual tool detection (Branch 5) to Spring AI function integration (Branch 6). Key features:\n\n- Function Registry API for discovering available functions\n- Enhanced health checks with function status\n- Spring AI function awareness in chat responses\n- Educational logging for function integration patterns\n\nArchitectural Focus:\n- Function Registry pattern for dynamic discovery\n- Health-based function availability\n- AI-driven function selection via enhanced system messages\n- Operational visibility through introspection endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response contains service status\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"Chat service is running\");",
+							"});",
+							"",
+							"pm.test(\"Response contains MCP status\", function () {",
+							"    var responseText = pm.response.text();",
+							"    pm.expect(responseText).to.include(\"MCP:\");",
+							"});",
+							"",
+							"pm.test(\"Response contains function status (Branch 6)\", function () {",
+							"    var responseText = pm.response.text();",
+							"    pm.expect(responseText).to.include(\"Functions:\");",
+							"});",
+							"",
+							"// Educational: Log the health response for learning",
+							"console.log(\"Branch 6 Health Response:\", pm.response.text());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chat/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"health"
+					]
+				},
+				"description": "Branch 6 Enhancement: Health check now includes function status in addition to MCP status.\n\nExpected Response Format:\n```\nChat service is running. MCP: [healthy|unhealthy] ([status]). Functions: [status]\n```\n\nFunction Status Examples:\n- \"Functions available (2 registered)\" - When MCP healthy\n- \"Functions disabled (MCP disabled)\" - When MCP disabled\n- \"Functions unavailable (MCP unhealthy)\" - When MCP unhealthy"
+			},
+			"response": []
+		},
+		{
+			"name": "Function Registry Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is valid JSON\", function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Response has required function fields\", function () {",
+							"    pm.expect(jsonData).to.have.property('available');",
+							"    pm.expect(jsonData).to.have.property('status');",
+							"    pm.expect(jsonData).to.have.property('functions');",
+							"    pm.expect(jsonData).to.have.property('count');",
+							"});",
+							"",
+							"pm.test(\"Functions array is valid\", function () {",
+							"    pm.expect(jsonData.functions).to.be.an('array');",
+							"    pm.expect(jsonData.count).to.equal(jsonData.functions.length);",
+							"});",
+							"",
+							"// Educational: Log function discovery results",
+							"console.log(\"Function Registry Status:\", jsonData);",
+							"console.log(\"Available Functions:\", jsonData.functions);",
+							"",
+							"// Store function availability for other tests",
+							"pm.environment.set(\"functionsAvailable\", jsonData.available);",
+							"pm.environment.set(\"functionCount\", jsonData.count);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chat/functions",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat",
+						"functions"
+					]
+				},
+				"description": "NEW in Branch 6: Function Registry introspection endpoint\n\nThis endpoint provides operational visibility into the function registry:\n\n**Response Structure:**\n```json\n{\n  \"available\": boolean,\n  \"status\": \"string describing function state\",\n  \"functions\": [\"echo\", \"ping\"],\n  \"count\": 2\n}\n```\n\n**Function States:**\n- `available: true` - Functions can be used by AI\n- `available: false` - Functions disabled due to MCP issues\n\n**Educational Value:**\n- Demonstrates function discovery patterns\n- Shows health-based availability\n- Provides debugging information for function integration"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Function Awareness Demo",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is valid JSON\", function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Response has message\", function () {",
+							"    pm.expect(jsonData).to.have.property('response');",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"});",
+							"",
+							"// Educational: Log the AI response",
+							"console.log(\"Branch 6 AI Response:\", jsonData.response);",
+							"",
+							"// Check if response indicates function awareness",
+							"var response = jsonData.response.toLowerCase();",
+							"var functionsAvailable = pm.environment.get(\"functionsAvailable\") === \"true\";",
+							"",
+							"if (functionsAvailable) {",
+							"    console.log(\"Functions are available - AI should be function-aware\");",
+							"} else {",
+							"    console.log(\"Functions not available - AI running in baseline mode\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"What can you help me with? Do you have any special capabilities?\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/chat",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat"
+					]
+				},
+				"description": "Branch 6 Evolution: This demonstrates AI function awareness through enhanced system messages.\n\n**Key Changes from Branch 5:**\n- No more manual tool detection\n- AI receives dynamic system messages describing available functions\n- AI can discover and use functions based on context\n- Function availability reflects MCP health status\n\n**Expected Behavior:**\n- When functions available: AI mentions its capabilities\n- When functions unavailable: AI operates in baseline mode\n- System messages inform AI about echo and ping functions\n\n**Educational Focus:**\n- Spring AI function integration patterns\n- Dynamic system message generation\n- Health-aware function availability"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Echo Function Context",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"var functionsAvailable = pm.environment.get(\"functionsAvailable\") === \"true\";",
+							"",
+							"pm.test(\"Response contains AI output\", function () {",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"    pm.expect(jsonData.response.length).to.be.above(0);",
+							"});",
+							"",
+							"// Educational logging",
+							"console.log(\"Echo Function Test Response:\", jsonData.response);",
+							"",
+							"if (functionsAvailable) {",
+							"    console.log(\"With functions available, AI may automatically use echo function\");",
+							"} else {",
+							"    console.log(\"Without functions, AI will provide explanatory response\");",
+							"}",
+							"",
+							"// In Branch 6, the AI decides whether to use functions",
+							"// This is different from Branch 5's manual detection"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Can you echo back 'Hello World' in uppercase?\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/chat",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat"
+					]
+				},
+				"description": "Branch 6 Function Integration: This tests AI's automatic function selection.\n\n**Branch 5 vs Branch 6 Comparison:**\n\n**Branch 5 (Manual Detection):**\n- ChatService detected \"echo\" + \"uppercase\" patterns\n- Automatically extracted message and format\n- Directly invoked echo tool\n- Returned formatted response\n\n**Branch 6 (AI Integration):**\n- Enhanced system message describes echo function\n- AI decides whether to use echo function\n- Spring AI handles function calling automatically\n- AI integrates function results into natural response\n\n**Educational Value:**\n- Shows evolution from manual to AI-driven tool selection\n- Demonstrates Spring AI function calling patterns\n- Highlights AI decision-making vs. pattern matching"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Ping Function Context",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Response contains AI output\", function () {",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"});",
+							"",
+							"// Educational logging",
+							"console.log(\"Ping Function Test Response:\", jsonData.response);",
+							"",
+							"var functionsAvailable = pm.environment.get(\"functionsAvailable\") === \"true\";",
+							"if (functionsAvailable) {",
+							"    console.log(\"AI can automatically test connectivity using ping function\");",
+							"} else {",
+							"    console.log(\"AI will explain connectivity concepts without testing\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"Can you test the MCP server connectivity?\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/chat",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat"
+					]
+				},
+				"description": "Branch 6 Ping Function Integration: Tests AI's ability to use ping function for connectivity testing.\n\n**Function Integration Patterns:**\n- AI receives system message describing ping function capabilities\n- User request about \"connectivity\" or \"testing\" may trigger ping usage\n- AI integrates function results into comprehensive response\n- Function only available when MCP services are healthy\n\n**Architectural Benefits:**\n- No manual pattern matching required\n- AI makes contextual decisions about function usage\n- Health-aware function availability\n- Framework handles error cases and retries\n\n**Learning Outcomes:**\n- Understand Spring AI function calling mechanisms\n- See AI decision-making in function selection\n- Observe health-based function availability"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Complex Function Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Response handles complex request\", function () {",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"    pm.expect(jsonData.response.length).to.be.above(50);",
+							"});",
+							"",
+							"// Educational: Complex function integration",
+							"console.log(\"Complex Function Request Response:\", jsonData.response);",
+							"",
+							"var functionsAvailable = pm.environment.get(\"functionsAvailable\") === \"true\";",
+							"if (functionsAvailable) {",
+							"    console.log(\"AI can potentially use multiple functions in sequence\");",
+							"    console.log(\"This demonstrates advanced function integration patterns\");",
+							"} else {",
+							"    console.log(\"AI provides explanatory response without function usage\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"First, check if the system is working by testing connectivity, then echo back 'System is operational' in uppercase.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/chat",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat"
+					]
+				},
+				"description": "Branch 6 Advanced: Complex multi-function request testing.\n\n**Complexity Factors:**\n- Request involves multiple potential function calls\n- Sequential operation (ping then echo)\n- Conditional logic (only echo if connectivity works)\n- Natural language instruction parsing\n\n**AI Decision Points:**\n- Should ping function be called first?\n- Should echo function be called with specific formatting?\n- How to integrate multiple function results?\n- How to handle function failures gracefully?\n\n**Educational Value:**\n- Demonstrates AI's ability to parse complex instructions\n- Shows potential for multi-step function workflows\n- Highlights benefits of AI-driven vs. manual function selection\n- Prepares concepts for future branches with advanced function chaining"
+			},
+			"response": []
+		},
+		{
+			"name": "Chat - Baseline Mode (No Functions)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"",
+							"pm.test(\"Baseline mode response\", function () {",
+							"    pm.expect(jsonData.response).to.be.a('string');",
+							"});",
+							"",
+							"// Educational: Baseline mode behavior",
+							"console.log(\"Baseline Mode Response:\", jsonData.response);",
+							"console.log(\"This shows graceful degradation when functions unavailable\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"message\": \"What happens when functions are not available?\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/chat",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chat"
+					]
+				},
+				"description": "Branch 6 Graceful Degradation: Testing behavior when functions are unavailable.\n\n**Graceful Degradation Patterns:**\n- System continues operating without functions\n- AI receives system message indicating no functions available\n- Responses focus on explanations rather than actions\n- Clear status communication through health endpoints\n\n**Function Unavailability Scenarios:**\n- MCP service disabled in configuration\n- MCP service unhealthy (connection issues)\n- External server not responding\n- Function discovery failures\n\n**Educational Concepts:**\n- Circuit breaker patterns in AI systems\n- Health-aware feature availability\n- Operational resilience and monitoring\n- Clear system state communication"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Branch 6: Function Integration Collection",
+					"console.log(\"=== Branch 6: Spring AI Function Integration ===\");",
+					"console.log(\"This collection demonstrates:\");",
+					"console.log(\"- Function Registry pattern for dynamic discovery\");",
+					"console.log(\"- Health-based function availability\");",
+					"console.log(\"- AI-driven function selection via system messages\");",
+					"console.log(\"- Evolution from manual tool detection\");",
+					"console.log(\"================================================\");"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global educational logging for Branch 6",
+					"if (pm.response.code === 200) {",
+					"    console.log(\"✅ Request successful - Branch 6 function integration working\");",
+					"} else {",
+					"    console.log(\"❌ Request failed - Check MCP service and function registry\");",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "branch",
+			"value": "6",
+			"type": "string"
+		},
+		{
+			"key": "branchName",
+			"value": "mcp-chat-tools",
+			"type": "string"
+		},
+		{
+			"key": "functionsEndpoint",
+			"value": "/api/chat/functions",
+			"type": "string"
+		}
+	]
+}
