@@ -148,6 +148,49 @@ spring:
 - Test with simple ping/echo before complex tools
 - Monitor WebSocket/SSE connections in browser DevTools
 
+## Documentation Philosophy
+
+This is an **educational project** with specific documentation requirements:
+
+### Core Principles
+- **WHY over HOW**: Always explain the reasoning behind architectural decisions
+- **Trade-offs**: Document PROS and CONS of different approaches  
+- **Alternatives**: Discuss what other options were considered and why they were rejected
+- **Learning Objectives**: Clear goals for each implementation phase
+- **Pitfalls**: Common mistakes and how to avoid them
+
+### Documentation Requirements
+
+**When implementing any new feature or branch:**
+
+1. **Create branch documentation** in `docs/branches/XX-branch-name.md`:
+   - Learning objectives for the branch
+   - Architectural decisions made and WHY
+   - Code patterns introduced with explanations
+   - PROS/CONS of the chosen approach
+   - Alternative solutions considered and rejected
+   - Preparation for future enhancements
+
+2. **Create ADRs** in `docs/decisions/` for significant architectural decisions:
+   - Follow the standard ADR format
+   - Include context, options considered, and rationale
+   - Document consequences and trade-offs
+
+3. **Update documentation index** in `docs/README.md`
+
+### Educational Focus Areas
+- **Architecture Evolution**: How each branch builds on previous concepts
+- **Pattern Teaching**: Reusable design patterns and when to use them
+- **Decision Rationale**: Why specific technologies/approaches were chosen
+- **Common Pitfalls**: What mistakes learners typically make and how to avoid them
+- **Future Evolution**: How current decisions prepare for upcoming features
+
+### Code Documentation Standards
+- Comments should explain WHY, not WHAT
+- Include decision rationale in code when non-obvious
+- Demonstrate patterns that students can reuse
+- Show evolution path in comments when preparing for future features
+
 ## Course Context
 
 This project is part of a teaching progression:
