@@ -148,6 +148,40 @@ class ControllerTest {
 - `POST /mcp/calculate` - Invoke calculator tool
 - `POST /mcp/search` - Web search via MCP
 
+## Testing and Demonstration
+
+### Command Line Testing
+```bash
+# Quick API test suite
+./test-examples.sh
+
+# Manual health check
+curl http://localhost:8080/api/chat/health
+
+# Manual chat test
+curl -X POST http://localhost:8080/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello, AI!"}'
+```
+
+### Visual Testing with Postman
+For trainers and visual demonstrations:
+
+1. **Import Collection**: `postman/L09ClientMCP.postman_collection.json`
+2. **Import Environment**: `postman/Local Development.postman_environment.json`
+3. **Select Environment**: "Local Development"
+4. **Run Collection**: Test all endpoints visually
+
+**Collection includes**:
+- Health check validation
+- Basic chat functionality
+- Technical question testing
+- MCP concept exploration
+- Error handling verification
+- Complex scenario testing
+
+See [Visual Testing Guide](docs/VISUAL_TESTING.md) for detailed trainer instructions.
+
 ## Common Tasks
 
 ### Adding New MCP Server Connection

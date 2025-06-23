@@ -1,0 +1,291 @@
+{
+    "info": {
+        "name": "L09ClientMCP - MCP Client Demo",
+        "description": "Educational API collection for demonstrating MCP Client functionality.\n\nThis collection shows the evolution from basic chatbot to MCP-enabled AI application.\n\n**Prerequisites:**\n- Application running on localhost:8080\n- OPENAI_API_KEY environment variable set\n\n**Learning Objectives:**\n- Understand REST API design for AI applications\n- See how chatbot responses evolve with MCP integration\n- Practice API testing methodologies",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Health Check",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Health check returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response contains expected message', function () {",
+                            "    pm.expect(pm.response.text()).to.include('Chat service is running');",
+                            "});",
+                            "",
+                            "console.log('✅ Service is healthy and ready for chat requests');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat/health",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat", "health"]
+                },
+                "description": "**Purpose:** Verify the application is running and healthy.\n\n**What to expect:**\n- Status: 200 OK\n- Response: \"Chat service is running\"\n\n**Teaching Points:**\n- Health checks are essential for monitoring\n- Simple endpoints help verify deployment\n- Foundation for more complex API testing"
+            },
+            "response": []
+        },
+        {
+            "name": "Basic Chat - Hello",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Chat request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response has correct structure', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('response');",
+                            "    pm.expect(jsonData.response).to.be.a('string');",
+                            "    pm.expect(jsonData.response.length).to.be.greaterThan(0);",
+                            "});",
+                            "",
+                            "pm.test('Response is conversational', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    // Check for common greeting responses",
+                            "    const hasGreeting = response.includes('hello') || ",
+                            "                       response.includes('hi') || ",
+                            "                       response.includes('help') ||",
+                            "                       response.includes('assist');",
+                            "    pm.expect(hasGreeting).to.be.true;",
+                            "});",
+                            "",
+                            "console.log('💬 Chat Response:', pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Hello! Can you introduce yourself?\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test basic chat functionality with a friendly greeting.\n\n**What to expect:**\n- Status: 200 OK\n- JSON response with 'response' field\n- Conversational AI-generated reply\n\n**Teaching Points:**\n- JSON request/response structure\n- AI generates contextual responses\n- System message influences tone (helpful assistant)\n- Foundation for more complex interactions"
+            },
+            "response": []
+        },
+        {
+            "name": "Technical Question - Spring AI",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Technical question handled successfully', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response mentions Spring AI concepts', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    const hasSpringAI = response.includes('spring ai') || ",
+                            "                       response.includes('spring') ||",
+                            "                       response.includes('ai') ||",
+                            "                       response.includes('framework');",
+                            "    pm.expect(hasSpringAI).to.be.true;",
+                            "});",
+                            "",
+                            "console.log('🤖 Technical Response:', pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"What is Spring AI and why should I use it for building AI applications?\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test the AI's knowledge of technical concepts relevant to our course.\n\n**What to expect:**\n- Detailed explanation of Spring AI\n- Benefits and use cases\n- Technical accuracy\n\n**Teaching Points:**\n- AI can provide technical explanations\n- Responses draw from training data knowledge\n- Quality depends on prompt clarity\n- Later: MCP will enhance with real-time data"
+            },
+            "response": []
+        },
+        {
+            "name": "MCP Concept Question",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('MCP question processed', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response discusses protocols or integration', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    const hasProtocol = response.includes('protocol') || ",
+                            "                       response.includes('integration') ||",
+                            "                       response.includes('model') ||",
+                            "                       response.includes('context') ||",
+                            "                       response.includes('mcp');",
+                            "    pm.expect(hasProtocol).to.be.true;",
+                            "});",
+                            "",
+                            "console.log('🔗 MCP Response:', pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"Explain the Model Context Protocol and how it enables AI applications to access external tools and data.\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test AI knowledge of MCP concepts before we implement MCP integration.\n\n**What to expect:**\n- Explanation of MCP concepts\n- Discussion of protocols and integration\n- General knowledge from training data\n\n**Teaching Points:**\n- Current response is from AI's training data only\n- No real-time or external data access yet\n- Shows the 'before' state for MCP comparison\n- Sets up the problem MCP solves"
+            },
+            "response": []
+        },
+        {
+            "name": "Error Handling Test",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Empty message handled gracefully', function () {",
+                            "    // Should return 200 with error message, not crash",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Error response has proper structure', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('response');",
+                            "    pm.expect(jsonData.response).to.be.a('string');",
+                            "});",
+                            "",
+                            "console.log('⚠️ Error Handling Response:', pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test how the application handles edge cases and invalid input.\n\n**What to expect:**\n- Graceful handling of empty messages\n- User-friendly error response\n- No application crashes\n\n**Teaching Points:**\n- Robust error handling is crucial\n- AI applications should degrade gracefully\n- User experience matters even for errors\n- Production apps need comprehensive error handling"
+            },
+            "response": []
+        },
+        {
+            "name": "Complex Question - Architecture",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Complex question processed successfully', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response is substantial', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    // Complex questions should get detailed responses",
+                            "    pm.expect(jsonData.response.length).to.be.greaterThan(100);",
+                            "});",
+                            "",
+                            "console.log('🏗️ Architecture Response Length:', pm.response.json().response.length, 'characters');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"message\": \"How would you design a scalable microservices architecture for an AI-powered customer support system that needs to handle real-time conversations, integrate with multiple data sources, and provide analytics?\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test the AI's ability to handle complex, multi-part questions.\n\n**What to expect:**\n- Comprehensive architectural advice\n- Multiple aspects addressed\n- Detailed technical response\n\n**Teaching Points:**\n- AI can handle complex technical discussions\n- Responses demonstrate reasoning ability\n- Shows current capabilities before MCP enhancement\n- Complex questions benefit from external data (future MCP use case)"
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "description": "Base URL for the L09ClientMCP application"
+        }
+    ]
+}
