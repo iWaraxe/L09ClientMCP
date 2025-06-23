@@ -1,0 +1,14 @@
+# Profile for using GPT-4 (more accurate but slower and more expensive)
+spring:
+  ai:
+    openai:
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.3  # Lower temperature for more consistent responses
+          max-tokens: 1500
+          
+# Additional logging for demonstration purposes
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: DEBUG  # Show HTTP requests to OpenAI

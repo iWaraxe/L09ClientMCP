@@ -1,0 +1,16 @@
+# Profile optimized for training demonstrations
+spring:
+  ai:
+    openai:
+      chat:
+        options:
+          model: gpt-3.5-turbo  # Fast and cost-effective for demos
+          temperature: 0.8      # Higher temperature for more varied responses
+          max-tokens: 800       # Shorter responses for easier reading during demos
+          
+# Quieter logging for cleaner demo output
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: INFO
+    org.springframework.ai: WARN
+    org.springframework.web.client.RestTemplate: WARN

@@ -20,7 +20,12 @@ public class ChatService {
     public String chat(String userMessage) {
         log.debug("Processing chat message: {}", userMessage);
         
-        var systemMessage = new SystemMessage("You are a helpful AI assistant. Be concise and informative.");
+        var systemMessage = new SystemMessage(
+            "You are a helpful AI assistant. Be concise and informative. " +
+            "Note: Your knowledge has a cutoff date and may not include the most recent information about " +
+            "software versions, recent developments, or current events. When discussing specific versions " +
+            "or recent changes, acknowledge this limitation."
+        );
         var userMsg = new UserMessage(userMessage);
         
         var prompt = new Prompt(List.of(systemMessage, userMsg));

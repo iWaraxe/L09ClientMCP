@@ -14,7 +14,16 @@ export OPENAI_API_KEY=your-openai-api-key-here
 
 ### 2. Start the Application
 ```bash
+# Default configuration (gpt-4o-mini)
 ./mvnw spring-boot:run
+
+# OR use different model profiles:
+
+# For training demos (faster, cheaper)
+./mvnw spring-boot:run -Dspring.profiles.active=demo
+
+# For high accuracy (slower, more expensive)
+./mvnw spring-boot:run -Dspring.profiles.active=gpt4
 ```
 
 ### 3. Verify It's Running

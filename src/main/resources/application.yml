@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: L09ClientMCP
+  
+  # AI Configuration
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      # Model configuration - you can change this to test different models
+      chat:
+        options:
+          model: gpt-4o-mini  # Alternative: gpt-4o, gpt-3.5-turbo
+          temperature: 0.7
+          max-tokens: 1000
+        
+# Server configuration
+server:
+  port: 8080
+
+# Logging configuration
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: DEBUG
+    org.springframework.ai: DEBUG
+    # Uncomment to see detailed HTTP requests to OpenAI
+    # org.springframework.web.client.RestTemplate: DEBUG
