@@ -1,0 +1,620 @@
+{
+    "info": {
+        "name": "L09ClientMCP - Branch 5: SSE Transport Integration",
+        "description": "Educational API collection for demonstrating MCP SSE Transport functionality with real external servers.\\n\\n**Prerequisites:**\\n- Node.js MCP server running on localhost:3000\\n- Application running on localhost:8080 with mcp-sse profile\\n- OPENAI_API_KEY environment variable set\\n\\n**Branch 5 Features:**\\n- Real MCP protocol communication over SSE\\n- External server integration and tool invocation\\n- Network-based error handling and retry logic\\n- Performance and latency testing\\n- Production-ready transport patterns\\n\\n**Setup Instructions:**\\n1. Start MCP server: `cd mcp-server && npm start`\\n2. Start Spring AI app: `./mvnw spring-boot:run -Dspring.profiles.active=mcp-sse`\\n3. Run this collection to test SSE integration\\n\\n**Learning Objectives:**\\n- Experience real MCP protocol over network\\n- Understand SSE transport benefits and challenges\\n- See network latency and error handling in action\\n- Compare mock vs. real server behavior",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Health Check - SSE Transport Status",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Health check returns 200', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response indicates SSE transport', function () {",
+                            "    const responseText = pm.response.text();",
+                            "    pm.expect(responseText).to.include('Type: SSE');",
+                            "});",
+                            "",
+                            "pm.test('External server connection status', function () {",
+                            "    const responseText = pm.response.text();",
+                            "    const connectionMatch = responseText.match(/Status: (\\\\w+)/);",
+                            "    ",
+                            "    if (connectionMatch) {",
+                            "        const status = connectionMatch[1];",
+                            "        console.log('🔗 MCP SSE Connection Status: ' + status);",
+                            "        ",
+                            "        if (status === 'connected') {",
+                            "            console.log('✅ External MCP server is connected via SSE');",
+                            "            console.log('🛠️  Ready for real tool integration testing');",
+                            "        } else {",
+                            "            console.log('❌ External MCP server not connected');",
+                            "            console.log('💡 Start server: cd mcp-server && npm start');",
+                            "        }",
+                            "    }",
+                            "});",
+                            "",
+                            "pm.test('Tool count from external server', function () {",
+                            "    const responseText = pm.response.text();",
+                            "    const toolMatch = responseText.match(/(\\\\d+) tools/);",
+                            "    ",
+                            "    if (toolMatch) {",
+                            "        const toolCount = parseInt(toolMatch[1]);",
+                            "        console.log('🛠️  Available tools from external server: ' + toolCount);",
+                            "        ",
+                            "        if (toolCount >= 2) {",
+                            "            console.log('✅ Expected tools available (echo, ping)');",
+                            "        } else {",
+                            "            console.log('⚠️  Fewer tools than expected - check server');",
+                            "        }",
+                            "    }",
+                            "});"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat/health",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat", "health"]
+                },
+                "description": "**Purpose:** Verify SSE transport integration and external server connectivity.\\n\\n**What to expect:**\\n- Status: 200 OK\\n- Response indicates SSE transport type\\n- External server connection status\\n- Tool count from real MCP server\\n\\n**Branch 5 Focus:**\\n- Real network communication status\\n- External dependency health monitoring\\n- SSE transport layer verification\\n- Production-ready connectivity patterns"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Echo Tool via SSE",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Chat request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Response indicates external tool usage', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    pm.expect(response).to.include('echo tool');",
+                            "});",
+                            "",
+                            "pm.test('Response contains external server metadata', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    ",
+                            "    // Should mention node_mcp_server (our external server)",
+                            "    const hasExternalServer = response.includes('node_mcp_server') || ",
+                            "                             response.includes('Server:') ||",
+                            "                             response.includes('external');",
+                            "    pm.expect(hasExternalServer).to.be.true;",
+                            "});",
+                            "",
+                            "pm.test('Message echoed correctly via SSE', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    pm.expect(response).to.include('Hello from SSE Transport!');",
+                            "});",
+                            "",
+                            "// Log response for educational review",
+                            "console.log('🌐 SSE Echo Response:');",
+                            "console.log(pm.response.json().response);",
+                            "console.log('');",
+                            "console.log('🔍 Key Differences from Mock Server:');",
+                            "console.log('- Real network latency');",
+                            "console.log('- External server processing');",
+                            "console.log('- SSE transport protocol');",
+                            "console.log('- Production error handling');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\\n    \\\"message\\\": \\\"echo Hello from SSE Transport!\\\"\\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test echo tool invocation through real SSE transport.\\n\\n**What to expect:**\\n- Chat detects echo request in user message\\n- Communicates with external MCP server via SSE\\n- Returns tool result with external server metadata\\n\\n**Branch 5 Features:**\\n- Real network communication over SSE\\n- External server tool processing\\n- Network latency and error handling\\n- Production transport patterns\\n\\n**Compare to Branch 4:**\\n- Branch 4: Local mock server (instant response)\\n- Branch 5: External server (network latency)\\n- Branch 4: Simulated tool behavior\\n- Branch 5: Real Node.js server processing"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Echo with Formatting via SSE",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Formatted echo successful via SSE', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Uppercase formatting applied by external server', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    pm.expect(response).to.include('HELLO WORLD');",
+                            "});",
+                            "",
+                            "pm.test('External server metadata present', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    ",
+                            "    // Check for external server indicators",
+                            "    const hasMetadata = response.includes('Format Applied: uppercase') ||",
+                            "                       response.includes('node_mcp_server') ||",
+                            "                       response.includes('timestamp');",
+                            "    pm.expect(hasMetadata).to.be.true;",
+                            "});",
+                            "",
+                            "// Measure response time for network analysis",
+                            "const responseTime = pm.response.responseTime;",
+                            "console.log('⏱️  SSE Tool Response Time: ' + responseTime + 'ms');",
+                            "",
+                            "if (responseTime < 1000) {",
+                            "    console.log('🚀 Fast response - local network performance');",
+                            "} else if (responseTime < 5000) {",
+                            "    console.log('⚡ Acceptable response time for network tool');",
+                            "} else {",
+                            "    console.log('🐌 Slow response - check network/server performance');",
+                            "}",
+                            "",
+                            "console.log('🔤 Formatted SSE Response:');",
+                            "console.log(pm.response.json().response);"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\\n    \\\"message\\\": \\\"Please echo 'Hello World' in uppercase\\\"\\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test complex parameter processing via external SSE server.\\n\\n**What to expect:**\\n- Natural language parameter extraction\\n- External server formatting logic\\n- Real network processing time\\n- Detailed response metadata\\n\\n**Branch 5 Advanced Features:**\\n- Parameter transmission over SSE\\n- External server business logic\\n- Network latency measurement\\n- Real-world error scenarios\\n\\n**Educational Value:**\\n- See actual network communication delays\\n- Experience external dependency behavior\\n- Understand production tool integration\\n- Learn network performance monitoring"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Ping External Server via SSE",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Ping request successful via SSE', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('External server connectivity confirmed', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    pm.expect(response).to.include('ping tool');",
+                            "    pm.expect(response).to.include('connectivity');",
+                            "});",
+                            "",
+                            "pm.test('Real server information present', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response;",
+                            "    ",
+                            "    // Should contain real server info",
+                            "    const hasRealServerInfo = response.includes('node_mcp_server') ||",
+                            "                              response.includes('uptime') ||",
+                            "                              response.includes('memory') ||",
+                            "                              response.includes('timestamp');",
+                            "    pm.expect(hasRealServerInfo).to.be.true;",
+                            "});",
+                            "",
+                            "// Extract and display server information",
+                            "const jsonData = pm.response.json();",
+                            "const response = jsonData.response;",
+                            "",
+                            "console.log('🏓 External Server Ping Results:');",
+                            "console.log(response);",
+                            "console.log('');",
+                            "",
+                            "// Parse server details if available",
+                            "if (response.includes('uptime')) {",
+                            "    console.log('📊 Server is providing real runtime metrics');",
+                            "}",
+                            "if (response.includes('memory')) {",
+                            "    console.log('💾 Server memory usage information available');",
+                            "}",
+                            "if (response.includes('timestamp')) {",
+                            "    console.log('⏰ Real-time timestamp from external server');",
+                            "}",
+                            "",
+                            "console.log('🌐 This demonstrates live communication with external MCP server');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\\n    \\\"message\\\": \\\"Can you ping the MCP server to test SSE connectivity?\\\"\\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test real-time connectivity to external MCP server via SSE.\\n\\n**What to expect:**\\n- Live ping to external Node.js server\\n- Real server metrics (uptime, memory)\\n- Actual timestamp from external system\\n- Network connectivity validation\\n\\n**Branch 5 Real-World Features:**\\n- External dependency health monitoring\\n- Live server status reporting\\n- Network latency measurement\\n- Production monitoring patterns\\n\\n**Comparison:**\\n- Mock server: Fake uptime/metrics\\n- External server: Real Node.js process data\\n- Mock server: No network delays\\n- External server: Actual network communication"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Network Error Handling",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Error handling request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('External server error handling', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    ",
+                            "    // Should demonstrate error from external server",
+                            "    const hasErrorHandling = response.includes('error') ||",
+                            "                            response.includes('empty') ||",
+                            "                            response.includes('failed') ||",
+                            "                            response.includes('tried');",
+                            "    pm.expect(hasErrorHandling).to.be.true;",
+                            "});",
+                            "",
+                            "// Analyze error response",
+                            "const jsonData = pm.response.json();",
+                            "const response = jsonData.response;",
+                            "",
+                            "console.log('⚠️  External Server Error Handling:');",
+                            "console.log(response);",
+                            "console.log('');",
+                            "",
+                            "if (response.toLowerCase().includes('empty')) {",
+                            "    console.log('✅ External server correctly validates empty messages');",
+                            "}",
+                            "",
+                            "console.log('🔍 Error Handling Features Demonstrated:');",
+                            "console.log('- External server input validation');",
+                            "console.log('- Network error transmission');",
+                            "console.log('- SSE error message handling');",
+                            "console.log('- Graceful error communication to user');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\\n    \\\"message\\\": \\\"echo \\\\\\\"\\\\\\\"\\\"\\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test error handling with external server via SSE transport.\\n\\n**What to expect:**\\n- External server validates empty message\\n- Error transmitted back via SSE\\n- Graceful error handling in chat flow\\n- User-friendly error communication\\n\\n**Branch 5 Error Scenarios:**\\n- Network communication errors\\n- External server validation failures\\n- SSE transport error handling\\n- Production error recovery patterns\\n\\n**Real-World Learning:**\\n- How errors propagate over networks\\n- External dependency error handling\\n- SSE error message formats\\n- User experience during failures"
+            },
+            "response": []
+        },
+        {
+            "name": "Chat - Fallback When Server Unavailable",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Fallback request successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Graceful degradation behavior', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const response = jsonData.response.toLowerCase();",
+                            "    ",
+                            "    // Should either use tool (if server available) or fall back to AI",
+                            "    const isToolResponse = response.includes('echo tool');",
+                            "    const isAIFallback = response.includes('echo') && !response.includes('echo tool');",
+                            "    ",
+                            "    pm.expect(isToolResponse || isAIFallback).to.be.true;",
+                            "});",
+                            "",
+                            "// Analyze response type",
+                            "const jsonData = pm.response.json();",
+                            "const response = jsonData.response;",
+                            "",
+                            "if (response.toLowerCase().includes('echo tool')) {",
+                            "    console.log('🔗 External server available - tool invocation successful');",
+                            "    console.log('✅ SSE transport working correctly');",
+                            "} else {",
+                            "    console.log('🔄 External server unavailable - graceful degradation to AI');",
+                            "    console.log('💡 This demonstrates production resilience patterns');",
+                            "}",
+                            "",
+                            "console.log('🎯 Fallback Response:');",
+                            "console.log(response);",
+                            "console.log('');",
+                            "console.log('📚 Educational Points:');",
+                            "console.log('- Graceful degradation in distributed systems');",
+                            "console.log('- External dependency failure handling');",
+                            "console.log('- User experience preservation during outages');",
+                            "console.log('- Production reliability patterns');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\\n    \\\"message\\\": \\\"echo Testing fallback behavior when server unavailable\\\"\\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/api/chat",
+                    "host": ["{{baseUrl}}"],
+                    "path": ["api", "chat"]
+                },
+                "description": "**Purpose:** Test system behavior when external MCP server is unavailable.\\n\\n**Test Scenarios:**\\n1. **Server Available**: Tool invocation via SSE\\n2. **Server Unavailable**: Graceful fallback to standard AI\\n\\n**What to expect:**\\n- Automatic detection of server availability\\n- Graceful degradation to AI responses\\n- Consistent user experience regardless of server status\\n\\n**Branch 5 Production Features:**\\n- External dependency monitoring\\n- Automatic failover mechanisms\\n- Service resilience patterns\\n- User experience preservation\\n\\n**Testing Instructions:**\\n- Run with server: `cd mcp-server && npm start`\\n- Run without server: Stop server and test fallback\\n- Compare responses to see graceful degradation"
+            },
+            "response": []
+        },
+        {
+            "name": "Direct Server - Health Check",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('External server health check successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Server returns health information', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('status');",
+                            "    pm.expect(jsonData).to.have.property('server');",
+                            "    pm.expect(jsonData).to.have.property('version');",
+                            "});",
+                            "",
+                            "pm.test('Server is healthy', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData.status).to.equal('healthy');",
+                            "    pm.expect(jsonData.server).to.equal('node_mcp_server');",
+                            "});",
+                            "",
+                            "// Display server information",
+                            "const jsonData = pm.response.json();",
+                            "console.log('🏥 External MCP Server Health:');",
+                            "console.log('Status: ' + jsonData.status);",
+                            "console.log('Server: ' + jsonData.server);",
+                            "console.log('Version: ' + jsonData.version);",
+                            "console.log('Uptime: ' + jsonData.uptime + ' seconds');",
+                            "console.log('Active Connections: ' + jsonData.connections);",
+                            "console.log('');",
+                            "console.log('✅ External server is ready for SSE integration');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:3000/health",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["health"]
+                },
+                "description": "**Purpose:** Direct health check of the external Node.js MCP server.\\n\\n**What to expect:**\\n- Status: 200 OK\\n- Server health information\\n- Real uptime and connection metrics\\n- Server identification details\\n\\n**Branch 5 Infrastructure:**\\n- External dependency monitoring\\n- Server health validation\\n- Real-time metrics collection\\n- Production readiness verification\\n\\n**Use Cases:**\\n- Pre-flight checks before testing\\n- Debugging connectivity issues\\n- Monitoring server performance\\n- Validating external dependencies"
+            },
+            "response": []
+        },
+        {
+            "name": "Direct Server - List Tools",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Tools list successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Expected tools are available', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('tools');",
+                            "    pm.expect(jsonData.tools).to.be.an('array');",
+                            "    pm.expect(jsonData.tools.length).to.be.at.least(2);",
+                            "});",
+                            "",
+                            "pm.test('Echo and Ping tools present', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    const toolNames = jsonData.tools.map(tool => tool.name);",
+                            "    pm.expect(toolNames).to.include('echo');",
+                            "    pm.expect(toolNames).to.include('ping');",
+                            "});",
+                            "",
+                            "// Display tool information",
+                            "const jsonData = pm.response.json();",
+                            "console.log('🛠️  External Server Tools:');",
+                            "jsonData.tools.forEach((tool, index) => {",
+                            "    console.log(`${index + 1}. ${tool.name}: ${tool.description}`);",
+                            "    ",
+                            "    if (tool.inputSchema) {",
+                            "        const required = tool.inputSchema.required || [];",
+                            "        const properties = Object.keys(tool.inputSchema.properties || {});",
+                            "        console.log(`   Parameters: ${properties.join(', ')}`);",
+                            "        console.log(`   Required: ${required.join(', ') || 'none'}`);",
+                            "    }",
+                            "    console.log('');",
+                            "});",
+                            "",
+                            "console.log('✅ External server tools ready for SSE integration');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{}"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/tools",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["tools"]
+                },
+                "description": "**Purpose:** Direct tool discovery from external MCP server.\\n\\n**What to expect:**\\n- List of available tools from external server\\n- Tool schemas and parameter definitions\\n- Real MCP protocol tool descriptions\\n\\n**Branch 5 Discovery:**\\n- External tool registration patterns\\n- MCP protocol compliance\\n- Schema-driven tool definitions\\n- Production tool metadata\\n\\n**Educational Value:**\\n- See real MCP tool specifications\\n- Understand external tool capabilities\\n- Learn production tool documentation\\n- Validate external server functionality"
+            },
+            "response": []
+        },
+        {
+            "name": "Direct Server - Test Echo Tool",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "exec": [
+                            "pm.test('Direct echo tool successful', function () {",
+                            "    pm.response.to.have.status(200);",
+                            "});",
+                            "",
+                            "pm.test('Echo tool returns expected result', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('success', true);",
+                            "    pm.expect(jsonData).to.have.property('content');",
+                            "    pm.expect(jsonData.content).to.include('Direct Server Test');",
+                            "});",
+                            "",
+                            "pm.test('Metadata contains server information', function () {",
+                            "    const jsonData = pm.response.json();",
+                            "    pm.expect(jsonData).to.have.property('metadata');",
+                            "    pm.expect(jsonData.metadata).to.have.property('server_type', 'node_mcp_server');",
+                            "});",
+                            "",
+                            "// Display direct tool result",
+                            "const jsonData = pm.response.json();",
+                            "console.log('🔧 Direct Tool Invocation Result:');",
+                            "console.log('Success: ' + jsonData.success);",
+                            "console.log('Content: ' + jsonData.content);",
+                            "console.log('');",
+                            "",
+                            "if (jsonData.metadata) {",
+                            "    console.log('📊 Tool Metadata:');",
+                            "    Object.keys(jsonData.metadata).forEach(key => {",
+                            "        console.log(`${key}: ${jsonData.metadata[key]}`);",
+                            "    });",
+                            "}",
+                            "",
+                            "console.log('');",
+                            "console.log('🎯 This demonstrates direct MCP server communication');",
+                            "console.log('Compare this to SSE-mediated tool calls in chat');"
+                        ],
+                        "type": "text/javascript"
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\\n    \\\"message\\\": \\\"Direct Server Test\\\",\\n    \\\"format\\\": \\\"uppercase\\\"\\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/tools/echo",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "3000",
+                    "path": ["tools", "echo"]
+                },
+                "description": "**Purpose:** Direct tool invocation bypassing SSE transport.\\n\\n**What to expect:**\\n- Direct HTTP tool call to external server\\n- Raw tool response without chat integration\\n- Pure MCP protocol communication\\n\\n**Branch 5 Comparison:**\\n- **Direct**: Raw HTTP POST to tool endpoint\\n- **SSE**: Tool call via SSE transport in chat context\\n- **Direct**: Immediate tool response\\n- **SSE**: Tool response integrated into conversation\\n\\n**Educational Value:**\\n- Understand MCP protocol fundamentals\\n- See raw tool communication patterns\\n- Compare transport layer differences\\n- Learn debugging techniques for MCP tools"
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "description": "Base URL for the L09ClientMCP application"
+        }
+    ]
+}

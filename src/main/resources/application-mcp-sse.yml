@@ -7,9 +7,15 @@ spring:
         type: SSE
         request-timeout: 30s
         sse:
-          # Configuration for SSE-based MCP servers  
-          # Servers will be configured here when we implement them
-          connections: {}
+          # Configuration for SSE-based MCP servers
+          connections:
+            demo-server:
+              url: "http://localhost:3000/mcp"
+              timeout: 30s
+              retry-attempts: 3
+              retry-delay: 5s
+              enabled: true
+              description: "Demo MCP server with echo and ping tools"
           
 # Production-appropriate logging for SSE
 logging:
@@ -17,3 +23,4 @@ logging:
     com.coherentsolutions.l09clientmcp: INFO
     org.springframework.ai: INFO
     org.springframework.ai.mcp: DEBUG  # MCP protocol logging
+    org.springframework.web.servlet.mvc.method.annotation.SseEmitter: DEBUG  # SSE logging

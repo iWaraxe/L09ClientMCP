@@ -5,6 +5,7 @@ import com.coherentsolutions.l09clientmcp.mcp.McpToolResult;
 import com.coherentsolutions.l09clientmcp.mcp.MockMcpEchoServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
+@ConditionalOnProperty(value = "spring.ai.mcp.client.type", havingValue = "STDIO", matchIfMissing = true)
 public class McpClientServiceImpl implements McpClientService {
     
     private final boolean mcpEnabled;
