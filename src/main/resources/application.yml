@@ -33,6 +33,59 @@ spring:
               health-check-interval: 30s
               max-retries: 3
               retry-delay: 5s
+      
+      # Multi-Server Configuration (Branch 9)
+      multi-server:
+        enabled: true
+        load-balancing-strategy: ROUND_ROBIN  # ROUND_ROBIN, WEIGHTED, RANDOM, LEAST_CONNECTIONS
+        health-check-interval: 30s
+        circuit-breaker:
+          failure-threshold: 5
+          timeout: 60s
+          half-open-retry-delay: 30s
+          failure-rate-threshold: 0.5
+          half-open-max-calls: 3
+        servers:
+          mock-server-1:
+            url: "mock://server1"
+            type: MOCK
+            tools: ["echo", "ping"]
+            weight: 1
+            enabled: true
+            connection-timeout: 10s
+            description: "Primary mock server for testing"
+          mock-server-2:
+            url: "mock://server2"
+            type: MOCK
+            tools: ["echo", "ping"]
+            weight: 1
+            enabled: true
+            connection-timeout: 10s
+            description: "Secondary mock server for testing"
+          brave-search-server:
+            url: "http://localhost:3001/sse"
+            type: SSE
+            tools: ["brave_web_search", "brave_news_search", "brave_image_search", "brave_video_search"]
+            weight: 2
+            enabled: true
+            connection-timeout: 30s
+            description: "Brave Search MCP server"
+          weather-server:
+            url: "http://localhost:3002/sse"
+            type: SSE
+            tools: ["get_weather", "get_forecast", "weather_alerts"]
+            weight: 1
+            enabled: false
+            connection-timeout: 15s
+            description: "Weather information server"
+          calculator-server:
+            url: "mock://calculator"
+            type: MOCK
+            tools: ["calculate", "convert_units", "math_operations"]
+            weight: 1
+            enabled: false
+            connection-timeout: 5s
+            description: "Mathematical calculations server"
 
 # Brave Search API Configuration
 brave:

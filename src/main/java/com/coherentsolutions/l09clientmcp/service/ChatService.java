@@ -404,4 +404,135 @@ public class ChatService {
         
         return null; // No format specified
     }
+    
+    /**
+     * Get multi-server status and statistics for user information.
+     * Branch 9: Added multi-server awareness and load balancing information.
+     */
+    public String getMultiServerStatus() {
+        if (!mcpClientService.isEnabled()) {
+            return "Multi-server MCP functionality is not enabled.";
+        }
+        
+        // Check if this is the multi-server implementation
+        if (mcpClientService instanceof MultiServerMcpClientService multiServerService) {
+            MultiServerMcpClientService.MultiServerStats stats = multiServerService.getMultiServerStats();
+            
+            StringBuilder status = new StringBuilder();
+            status.append("**Multi-Server MCP Status**\n\n");
+            status.append(String.format("• **Total Servers**: %d\n", stats.totalServers()));
+            status.append(String.format("• **Healthy Servers**: %d\n", stats.healthyServers()));
+            status.append(String.format("• **Available Tools**: %d\n", stats.availableTools()));
+            
+            if (!stats.serverSelectionCounts().isEmpty()) {
+                status.append("\n**Server Load Distribution**:\n");
+                stats.serverSelectionCounts().forEach((serverId, count) -> {
+                    status.append(String.format("  - %s: %d requests\n", serverId, count));
+                });
+            }
+            
+            if (!stats.circuitBreakerStats().isEmpty()) {
+                status.append("\n**Circuit Breaker Status**:\n");
+                stats.circuitBreakerStats().forEach((serverId, cbStats) -> {
+                    status.append(String.format("  - %s: %s (Success: %.1f%%)\n", 
+                                 serverId, cbStats.state(), cbStats.getSuccessRate() * 100));
+                });
+            }
+            
+            return status.toString();
+        } else {
+            return "Single-server MCP mode: " + mcpClientService.getStatus();
+        }
+    }
+    
+    /**
+     * Demonstrate multi-server load balancing by executing the same tool multiple times.
+     * Branch 9: Show how requests are distributed across multiple servers.
+     */
+    public String demonstrateLoadBalancing(String toolName, int requests) {
+        if (!mcpClientService.isEnabled()) {
+            return "MCP is not enabled, cannot demonstrate load balancing.";
+        }
+        
+        StringBuilder result = new StringBuilder();
+        result.append(String.format("**Load Balancing Demonstration**\n\n"));
+        result.append(String.format("Executing '%s' tool %d times to show server distribution:\n\n", toolName, requests));
+        
+        for (int i = 1; i <= requests; i++) {
+            try {
+                switch (toolName.toLowerCase()) {
+                    case "echo" -> {
+                        EchoFunction.Request request = new EchoFunction.Request("Test " + i, null);
+                        EchoFunction.Response response = echoFunction.apply(request);
+                        result.append(String.format("%d. Echo result: %s\n", i, response.result()));
+                    }
+                    case "ping" -> {
+                        PingFunction.Request request = new PingFunction.Request();
+                        PingFunction.Response response = pingFunction.apply(request);
+                        result.append(String.format("%d. Ping result: %s\n", i, response.message()));
+                    }
+                    default -> {
+                        result.append(String.format("%d. Unsupported tool: %s\n", i, toolName));
+                    }
+                }
+            } catch (Exception e) {
+                result.append(String.format("%d. Error: %s\n", i, e.getMessage()));
+            }
+        }
+        
+        // Show final server distribution if multi-server
+        if (mcpClientService instanceof MultiServerMcpClientService multiServerService) {
+            MultiServerMcpClientService.MultiServerStats stats = multiServerService.getMultiServerStats();
+            result.append("\n**Final Server Distribution**:\n");
+            stats.serverSelectionCounts().forEach((serverId, count) -> {
+                result.append(String.format("  - %s: %d requests\n", serverId, count));
+            });
+        }
+        
+        return result.toString();
+    }
+    
+    /**
+     * Test server health and failover capabilities.
+     * Branch 9: Demonstrate health monitoring and circuit breaker functionality.
+     */
+    public String testServerHealth() {
+        if (!mcpClientService.isEnabled()) {
+            return "MCP is not enabled, cannot test server health.";
+        }
+        
+        StringBuilder result = new StringBuilder();
+        result.append("**Server Health Check Results**\n\n");
+        
+        // Force health check if multi-server
+        if (mcpClientService instanceof MultiServerMcpClientService multiServerService) {
+            multiServerService.forceHealthCheck();
+            
+            // Wait a moment for health checks to complete
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            
+            MultiServerMcpClientService.MultiServerStats stats = multiServerService.getMultiServerStats();
+            
+            result.append(String.format("Overall Health: %d/%d servers healthy\n\n", 
+                         stats.healthyServers(), stats.totalServers()));
+            
+            if (!stats.circuitBreakerStats().isEmpty()) {
+                result.append("**Individual Server Status**:\n");
+                stats.circuitBreakerStats().forEach((serverId, cbStats) -> {
+                    result.append(String.format("• **%s**: %s\n", serverId, cbStats.state()));
+                    result.append(String.format("  - Total calls: %d\n", cbStats.totalCalls()));
+                    result.append(String.format("  - Success rate: %.1f%%\n", cbStats.getSuccessRate() * 100));
+                    result.append(String.format("  - Consecutive failures: %d\n\n", cbStats.consecutiveFailures()));
+                });
+            }
+        } else {
+            result.append("Single-server mode: ").append(mcpClientService.getStatus());
+        }
+        
+        return result.toString();
+    }
 }
