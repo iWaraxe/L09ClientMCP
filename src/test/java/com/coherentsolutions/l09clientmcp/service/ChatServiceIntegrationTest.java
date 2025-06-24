@@ -14,6 +14,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 /**
  * Integration tests for ChatService with MCP tool functionality.
@@ -60,10 +61,10 @@ class ChatServiceIntegrationTest {
         // Create chat service
         chatService = new ChatService(chatClient, mcpClientService, echoFunction, pingFunction);
         
-        // Setup mock chain
-        when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(callSpec);
-        when(callSpec.content()).thenReturn("Standard AI response");
+        // Setup mock chain - use lenient mode for optional stubs
+        lenient().when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
+        lenient().when(requestSpec.call()).thenReturn(callSpec);
+        lenient().when(callSpec.content()).thenReturn("Standard AI response");
     }
 
     @Test
@@ -76,7 +77,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("Hello World"));
-        assertTrue(response.contains("Format Applied: none"));
+        assertTrue(response.contains("**Format Applied:** none"));
         
         // Verify AI wasn't called since tool handled the request
         verify(chatClient, never()).prompt(any(Prompt.class));
@@ -91,7 +92,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("HELLO WORLD"));
-        assertTrue(response.contains("Format Applied: uppercase"));
+        assertTrue(response.contains("**Format Applied:** uppercase"));
     }
 
     @Test
@@ -103,7 +104,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("testing"));
-        assertTrue(response.contains("Format Applied: lowercase"));
+        assertTrue(response.contains("**Format Applied:** lowercase"));
     }
 
     @Test
@@ -115,7 +116,7 @@ class ChatServiceIntegrationTest {
         assertNotNull(response);
         assertTrue(response.contains("I used the echo tool"));
         assertTrue(response.contains("olleh"));
-        assertTrue(response.contains("Format Applied: reverse"));
+        assertTrue(response.contains("**Format Applied:** reverse"));
     }
 
     @Test
@@ -125,6 +126,7 @@ class ChatServiceIntegrationTest {
         String response = chatService.chat(userMessage);
         
         assertNotNull(response);
+        System.out.println("DEBUG - Ping response: " + response);
         assertTrue(response.contains("I used the ping tool"));
         assertTrue(response.contains("pong"));
         assertTrue(response.contains("The MCP connection is working properly"));

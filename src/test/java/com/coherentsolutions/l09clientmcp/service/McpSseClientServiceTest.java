@@ -256,9 +256,10 @@ class McpSseClientServiceTest {
     }
 
     private McpTool createMockTool(String name) {
-        McpTool tool = mock(McpTool.class);
-        when(tool.getName()).thenReturn(name);
-        when(tool.getDescription()).thenReturn("Test tool: " + name);
-        return tool;
+        return McpTool.builder()
+                .name(name)
+                .description("Test tool: " + name)
+                .inputSchema(Map.of("type", "object"))
+                .build();
     }
 }

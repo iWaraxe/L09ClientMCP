@@ -75,8 +75,11 @@ public class EchoFunction implements Function<EchoFunction.Request, EchoFunction
             McpToolResult result = mcpClientService.invokeTool("echo", arguments);
             
             if (result.isSuccess()) {
-                String formatApplied = result.getMetadata() != null ? 
-                    (String) result.getMetadata().get("format_applied") : "none";
+                String formatApplied = null;
+                if (result.getMetadata() != null) {
+                    Object formatObj = result.getMetadata().get("format_applied");
+                    formatApplied = formatObj != null ? (String) formatObj : "none";
+                }
                 
                 log.info("Echo tool succeeded: '{}' -> '{}'", request.message(), result.getContent());
                 
