@@ -1,0 +1,995 @@
+{
+	"info": {
+		"_postman_id": "b8f9c2d4-1a2b-4c5d-8e9f-123456789abc",
+		"name": "L09ClientMCP - Branch 8: Brave Search Integration",
+		"description": "Comprehensive testing collection for Branch 8 Brave Search MCP integration.\n\nThis collection demonstrates:\n- Real-time web search capabilities through MCP\n- AI-driven search detection and response formatting\n- Multiple search types (web, news, images, videos)\n- Error handling and fallback mechanisms\n- Integration with existing echo and ping tools\n\n**Prerequisites:**\n- Application running on localhost:8080\n- MCP client enabled in configuration\n- Optional: BRAVE_API_KEY for real search testing\n\n**Branch 8 Focus:**\n- External API integration through MCP protocol\n- Production-grade search functionality\n- Advanced AI-chat integration patterns",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "API Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains success message\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include(\"L09ClientMCP API is running\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/chat/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"health"
+							]
+						},
+						"description": "Verify the API is running and responsive."
+					},
+					"response": []
+				}
+			],
+			"description": "Basic health check endpoints to verify service availability."
+		},
+		{
+			"name": "AI-Driven Search Integration",
+			"item": [
+				{
+					"name": "Current Information Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates search was performed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('searched') || text.includes('found') || text.includes('results');",
+									"    });",
+									"});",
+									"",
+									"pm.test(\"Response contains search metadata\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response;",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('search') || text.includes('information');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What are the latest developments in AI technology?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test AI's ability to detect and handle current information requests automatically."
+					},
+					"response": []
+				},
+				{
+					"name": "News Search Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates news search was performed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('news') || text.includes('breaking') || text.includes('headlines');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What are the latest news about artificial intelligence?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test news-specific search detection and response formatting."
+					},
+					"response": []
+				},
+				{
+					"name": "Technology Version Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains version or current information\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('version') || text.includes('current') || text.includes('latest');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What is the current version of Spring Boot?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test search detection for technology version inquiries."
+					},
+					"response": []
+				},
+				{
+					"name": "Weather Information Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains weather or search information\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('weather') || text.includes('search') || text.includes('information');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What's the weather like today?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test search detection for weather-related queries."
+					},
+					"response": []
+				}
+			],
+			"description": "Test AI's automatic detection and handling of search-requiring queries."
+		},
+		{
+			"name": "Search Type Validation",
+			"item": [
+				{
+					"name": "Web Search Detection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates web search was used\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('search') || text.includes('found') || text.includes('web');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Find information about Spring Framework documentation\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test general web search functionality."
+					},
+					"response": []
+				},
+				{
+					"name": "News Search Detection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates news search was used\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('news') || text.includes('search') || text.includes('breaking');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Show me the breaking news about technology\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test news-specific search type detection."
+					},
+					"response": []
+				},
+				{
+					"name": "Image Search Detection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response acknowledges image search request\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('image') || text.includes('photo') || text.includes('search');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Find images of Spring Boot architecture diagrams\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test image search type detection."
+					},
+					"response": []
+				},
+				{
+					"name": "Video Search Detection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response acknowledges video search request\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('video') || text.includes('tutorial') || text.includes('search');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Find tutorial videos about Spring AI\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test video search type detection."
+					},
+					"response": []
+				}
+			],
+			"description": "Validate different search type detection and appropriate tool selection."
+		},
+		{
+			"name": "Legacy Tools Integration",
+			"item": [
+				{
+					"name": "Echo Tool - Basic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains echo tool usage\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response;",
+									"    pm.expect(response).to.include(\"echo tool\");",
+									"    pm.expect(response).to.include(\"Hello World\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Echo back 'Hello World'\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Verify echo tool still works alongside search functionality."
+					},
+					"response": []
+				},
+				{
+					"name": "Echo Tool - With Formatting",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains uppercase formatted text\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response;",
+									"    pm.expect(response).to.include(\"HELLO\");",
+									"    pm.expect(response).to.include(\"uppercase\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Echo 'hello' in uppercase\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test echo tool with formatting options."
+					},
+					"response": []
+				},
+				{
+					"name": "Ping Tool - Connectivity Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains ping tool usage\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response;",
+									"    pm.expect(response).to.include(\"ping tool\");",
+									"    pm.expect(response).to.include(\"connectivity\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Ping the MCP server\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Verify ping tool functionality is preserved."
+					},
+					"response": []
+				}
+			],
+			"description": "Ensure existing echo and ping tools continue to work with new search functionality."
+		},
+		{
+			"name": "Mixed Tool Usage Scenarios",
+			"item": [
+				{
+					"name": "Search then Echo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains search information\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('search') || text.includes('found') || text.includes('information');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Find the latest Java news and then echo back the results\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test complex scenarios involving multiple tools."
+					},
+					"response": []
+				},
+				{
+					"name": "Non-Tool Standard Response",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response does not indicate tool usage\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.not.include(\"tool\");",
+									"    pm.expect(response).to.not.include(\"searched\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Explain object-oriented programming concepts\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Verify standard AI responses work when no tools are needed."
+					},
+					"response": []
+				}
+			],
+			"description": "Test complex scenarios and ensure proper tool selection logic."
+		},
+		{
+			"name": "Error Handling",
+			"item": [
+				{
+					"name": "Search with No Results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response handles no results gracefully\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('search') || text.includes('no results') || text.includes('not find');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Find information about xyznonexistenttermabc123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test handling of searches that return no results."
+					},
+					"response": []
+				},
+				{
+					"name": "Empty Search Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response handles empty query gracefully\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.response).to.exist;",
+									"    pm.expect(jsonData.response.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Search for \"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test handling of empty or malformed search queries."
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Request Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Returns error status for invalid request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 422, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invalidField\": \"test\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test handling of invalid request formats."
+					},
+					"response": []
+				}
+			],
+			"description": "Validate error handling and edge cases in search functionality."
+		},
+		{
+			"name": "Performance & Response Quality",
+			"item": [
+				{
+					"name": "Search Response Time",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is reasonable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+									"});",
+									"",
+									"pm.test(\"Response contains search results\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response;",
+									"    pm.expect(response.length).to.be.greaterThan(50);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What are the current trends in machine learning?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test search performance and response quality."
+					},
+					"response": []
+				},
+				{
+					"name": "Complex Query Processing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response handles complex query\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('spring') || text.includes('search') || text.includes('information');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Find recent updates about Spring Boot 3.x performance improvements and security enhancements released in 2024\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "Test handling of complex, multi-faceted search queries."
+					},
+					"response": []
+				}
+			],
+			"description": "Evaluate search performance and response quality metrics."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
