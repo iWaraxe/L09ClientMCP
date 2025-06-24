@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -39,6 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * - Security and compliance considerations
  */
 @Service
+@Primary
 @ConditionalOnProperty(
     name = "spring.ai.mcp.production.enabled", 
     havingValue = "true"

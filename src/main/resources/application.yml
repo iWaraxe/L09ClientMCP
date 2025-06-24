@@ -89,7 +89,7 @@ spring:
       
       # Production Configuration (Branch 10)
       production:
-        enabled: true
+        enabled: false  # Set to true to enable production features
         environment: dev  # dev, staging, prod
         
         # Monitoring & Observability
