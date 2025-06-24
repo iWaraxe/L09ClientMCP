@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(value = "spring.ai.mcp.client.type", havingValue = "SSE")
+@ConditionalOnProperty(value = "spring.ai.mcp.client.type", havingValue = "SYNC")
 public class McpSseClientService implements McpClientService {
     
     private final boolean mcpEnabled;
@@ -46,9 +46,9 @@ public class McpSseClientService implements McpClientService {
             @Value("${spring.ai.mcp.client.enabled:false}") boolean mcpEnabled,
             @Value("${spring.ai.mcp.client.type:SSE}") String mcpType,
             @Value("${spring.ai.mcp.client.request-timeout:30s}") String requestTimeoutStr,
-            @Value("${spring.ai.mcp.client.sse.connections.demo-server.url:http://localhost:3000/mcp}") String serverUrl,
-            @Value("${spring.ai.mcp.client.sse.connections.demo-server.retry-attempts:3}") int retryAttempts,
-            @Value("${spring.ai.mcp.client.sse.connections.demo-server.retry-delay:5s}") String retryDelayStr) {
+            @Value("${spring.ai.mcp.client.sse.connections.echo-server.url:http://localhost:3000/sse}") String serverUrl,
+            @Value("${spring.ai.mcp.client.sse.connections.echo-server.max-retries:3}") int retryAttempts,
+            @Value("${spring.ai.mcp.client.sse.connections.echo-server.retry-delay:5s}") String retryDelayStr) {
         
         this.mcpEnabled = mcpEnabled;
         this.mcpType = mcpType;
