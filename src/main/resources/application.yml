@@ -86,6 +86,126 @@ spring:
             enabled: false
             connection-timeout: 5s
             description: "Mathematical calculations server"
+      
+      # Production Configuration (Branch 10)
+      production:
+        enabled: true
+        environment: dev  # dev, staging, prod
+        
+        # Monitoring & Observability
+        monitoring:
+          enabled: true
+          metrics:
+            enabled: true
+            prometheus: true
+            export-interval-seconds: 30
+            included-metrics:
+              - "mcp.tool.*"
+              - "mcp.server.*"
+              - "mcp.circuit.*"
+              - "mcp.health.*"
+              - "mcp.retry.*"
+              - "mcp.ratelimit.*"
+          health:
+            enabled: true
+            interval: 30s
+            timeout: 5s
+            retry-attempts: 3
+        
+        # Distributed Tracing
+        tracing:
+          enabled: true
+          sampling-rate: 0.1  # 10% sampling for development
+          exporter-type: zipkin
+          exporter-endpoint: "http://localhost:9411/api/v2/spans"
+          baggage-fields:
+            - "user.id"
+            - "session.id"
+            - "request.id"
+        
+        # Advanced Retry Mechanisms
+        retry:
+          enabled: true
+          default-policy:
+            max-attempts: 3
+            initial-delay: 100ms
+            max-delay: 5s
+            multiplier: 2.0
+            jitter: 0.1
+            retryable-exceptions:
+              - "java.net.SocketTimeoutException"
+              - "org.springframework.web.client.ResourceAccessException"
+              - "java.util.concurrent.TimeoutException"
+          tool-policies:
+            brave_web_search:
+              max-attempts: 2
+              initial-delay: 200ms
+              max-delay: 3s
+              multiplier: 1.5
+        
+        # Rate Limiting
+        rate-limit:
+          enabled: true
+          global-requests-per-minute: 1000
+          server-requests-per-minute: 60
+          tool-requests-per-minute: 30
+          user-requests-per-minute: 100
+          adaptive: true
+        
+        # Security
+        security:
+          enabled: true
+          auth:
+            enabled: true
+            type: jwt
+            issuer: "mcp-client"
+            token-expiration: 1h
+            require-https: false  # Set to true in production
+          authz:
+            enabled: true
+            type: rbac
+            role-permissions:
+              admin: ["*"]
+              user: ["tool:invoke", "tool:list", "health:check"]
+              readonly: ["tool:list", "health:check"]
+        
+        # Performance Optimization
+        performance:
+          cache:
+            enabled: true
+            type: caffeine
+            max-size: 1000
+            expire-after-write: 5m
+            expire-after-access: 2m
+          pool:
+            core-pool-size: 10
+            max-pool-size: 50
+            keep-alive-time: 2m
+            queue-capacity: 1000
+        
+        # Audit Logging
+        audit:
+          enabled: true
+          audit-events:
+            - "tool.invocation"
+            - "server.selection"
+            - "circuit.breaker.event"
+            - "security.authentication"
+            - "security.authorization"
+          destination: file
+          retention-period: 90d
+        
+        # Connection Management
+        connection:
+          connect-timeout: 10s
+          read-timeout: 30s
+          write-timeout: 30s
+          keep-alive: true
+          keep-alive-timeout: 5m
+          tls:
+            enabled: true
+            verify-hostname: true
+            protocols: ["TLSv1.2", "TLSv1.3"]
 
 # Brave Search API Configuration
 brave:
@@ -99,10 +219,56 @@ brave:
 server:
   port: 8080
 
+# Spring Boot Actuator (Production Monitoring)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus,traces,env,beans,conditions"
+      base-path: "/actuator"
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 30s
+        descriptions: true
+    distribution:
+      percentiles-histogram:
+        mcp.tool.invocation: true
+        mcp.server.response: true
+        mcp.health.check: true
+      percentiles:
+        mcp.tool.invocation: 0.5,0.95,0.99
+        mcp.server.response: 0.5,0.95,0.99
+  tracing:
+    sampling:
+      probability: 0.1
+    zipkin:
+      endpoint: "http://localhost:9411/api/v2/spans"
+  health:
+    circuit-breakers:
+      enabled: true
+    rate-limiters:
+      enabled: true
+
 # Logging configuration
 logging:
   level:
     com.coherentsolutions.l09clientmcp: DEBUG
     org.springframework.ai: DEBUG
+    # Production monitoring
+    io.micrometer: INFO
+    io.zipkin: INFO
     # Uncomment to see detailed HTTP requests to OpenAI
     # org.springframework.web.client.RestTemplate: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
