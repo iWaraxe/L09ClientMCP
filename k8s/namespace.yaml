@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: l09clientmcp
+  labels:
+    name: l09clientmcp
+    environment: production
+    app.kubernetes.io/name: l09clientmcp
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/part-of: spring-ai-mcp

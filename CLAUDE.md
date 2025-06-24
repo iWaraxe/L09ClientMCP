@@ -253,3 +253,8 @@ The goal is to demonstrate how AI applications evolve from isolated tools to int
 ## Postman Collection Management
 
 - **Workflow Recommendation**: Do not update L09ClientMCP.postman_collection.json rather create new document for each new branch, and I'll move from collection to collection in Postman while I move from branch to branch in the project
+
+## Operational Enhancements
+
+### Audio Alert
+- Run afplay /System/Library/Sounds/Glass.aiff (or any other system sound) at the end of tasks, or when my input is needed to proceed with a task.

@@ -4,6 +4,9 @@ import com.coherentsolutions.l09clientmcp.config.MultiServerConfig;
 import com.coherentsolutions.l09clientmcp.mcp.McpTool;
 import com.coherentsolutions.l09clientmcp.mcp.McpToolResult;
 import com.coherentsolutions.l09clientmcp.multiserver.*;
+import com.coherentsolutions.l09clientmcp.production.audit.Auditable;
+import com.coherentsolutions.l09clientmcp.production.audit.AuditEventType;
+import com.coherentsolutions.l09clientmcp.production.audit.AuditLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -41,6 +44,7 @@ public class MultiServerMcpClientService implements McpClientService {
     private final WeightedServerSelector weightedSelector;
     private final McpCircuitBreaker circuitBreaker;
     private final McpHealthMonitor healthMonitor;
+    private final AuditLogger auditLogger;
     
     public MultiServerMcpClientService(
             MultiServerConfig config,
@@ -48,7 +52,8 @@ public class MultiServerMcpClientService implements McpClientService {
             @Qualifier("roundRobinServerSelector") RoundRobinServerSelector roundRobinSelector,
             @Qualifier("weightedServerSelector") WeightedServerSelector weightedSelector,
             McpCircuitBreaker circuitBreaker,
-            McpHealthMonitor healthMonitor
+            McpHealthMonitor healthMonitor,
+            AuditLogger auditLogger
     ) {
         this.config = config;
         this.serverRegistry = serverRegistry;
@@ -56,6 +61,7 @@ public class MultiServerMcpClientService implements McpClientService {
         this.weightedSelector = weightedSelector;
         this.circuitBreaker = circuitBreaker;
         this.healthMonitor = healthMonitor;
+        this.auditLogger = auditLogger;
     }
     
     private ServerSelector activeSelector;
@@ -160,6 +166,7 @@ public class MultiServerMcpClientService implements McpClientService {
     }
     
     @Override
+    @Auditable(eventType = AuditEventType.MCP_TOOL_INVOCATION, resource = "mcp_tool", action = "invoke")
     public McpToolResult invokeTool(String toolName, Map<String, Object> arguments) {
         if (!isEnabled()) {
             throw new IllegalStateException("Multi-server MCP client is disabled");
@@ -173,6 +180,7 @@ public class MultiServerMcpClientService implements McpClientService {
         if (candidates.isEmpty()) {
             String errorMsg = String.format("No healthy servers available for tool: %s", toolName);
             log.warn(errorMsg);
+            auditLogger.logFailureEvent(AuditEventType.MCP_TOOL_FAILURE, "system", null, toolName, "invoke", errorMsg);
             return McpToolResult.builder()
                     .success(false)
                     .content(errorMsg)
@@ -189,6 +197,7 @@ public class MultiServerMcpClientService implements McpClientService {
         if (selectedServer.isEmpty()) {
             String errorMsg = String.format("Server selection failed for tool: %s", toolName);
             log.error(errorMsg);
+            auditLogger.logFailureEvent(AuditEventType.MCP_TOOL_FAILURE, "system", null, toolName, "invoke", errorMsg);
             return McpToolResult.builder()
                     .success(false)
                     .content(errorMsg)
@@ -211,14 +220,20 @@ public class MultiServerMcpClientService implements McpClientService {
             log.debug("Tool {} executed successfully on server {} in {}ms", 
                      toolName, serverId, result.getMetadata().get("execution_time_ms"));
             
+            auditLogger.logEvent(AuditEventType.MCP_TOOL_SUCCESS, "system", null, toolName, "invoke", "SUCCESS", 
+                               String.format("Tool executed on server %s", serverId));
+            
             return result;
             
         } catch (McpCircuitBreaker.CircuitBreakerOpenException e) {
             log.warn("Circuit breaker open for server {}, trying fallback", serverId);
+            auditLogger.logEvent(AuditEventType.MCP_TOOL_FAILURE, "system", null, toolName, "invoke", "CIRCUIT_BREAKER_OPEN", 
+                               String.format("Circuit breaker open for server %s, attempting fallback", serverId));
             return tryFallbackExecution(toolName, arguments, serverId, candidates);
             
         } catch (Exception e) {
             log.error("Tool execution failed on server {}: {}", serverId, e.getMessage());
+            auditLogger.logFailureEvent(AuditEventType.MCP_TOOL_FAILURE, "system", null, toolName, "invoke", e.getMessage());
             return McpToolResult.builder()
                     .success(false)
                     .content("Tool execution failed: " + e.getMessage())

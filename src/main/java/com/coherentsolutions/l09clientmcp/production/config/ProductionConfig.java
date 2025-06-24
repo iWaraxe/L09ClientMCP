@@ -299,10 +299,16 @@ public class ProductionConfig {
         private Boolean enabled = true;
         
         /**
-         * Authentication configuration.
+         * JWT configuration.
          */
         @Valid
-        private AuthConfig auth = new AuthConfig();
+        private JwtConfig jwt = new JwtConfig();
+        
+        /**
+         * CORS configuration.
+         */
+        @Valid
+        private CorsConfig cors = new CorsConfig();
         
         /**
          * Authorization configuration.
@@ -315,21 +321,44 @@ public class ProductionConfig {
         }
         
         @Data
-        public static class AuthConfig {
-            @NotNull
-            private Boolean enabled = true;
+        public static class JwtConfig {
+            private String secret = ""; // Should be configured via environment variable
             
             @NotBlank
-            private String type = "jwt";
+            private String issuer = "mcp-client-production";
             
             @NotBlank
-            private String issuer = "mcp-client";
+            private String audience = "mcp-api";
             
             @NotNull
-            private Duration tokenExpiration = Duration.ofHours(1);
+            private Duration accessTokenExpiry = Duration.ofHours(1);
+            
+            @NotNull
+            private Duration refreshTokenExpiry = Duration.ofDays(7);
             
             @NotNull
             private Boolean requireHttps = true;
+        }
+        
+        @Data
+        public static class CorsConfig {
+            @NotNull
+            private Boolean enabled = true;
+            
+            @NotEmpty
+            private List<String> allowedOrigins = List.of("http://localhost:3000", "http://localhost:8080");
+            
+            @NotNull
+            private Boolean allowCredentials = true;
+            
+            @NotEmpty
+            private List<String> allowedMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS");
+            
+            @NotEmpty
+            private List<String> allowedHeaders = List.of("*");
+            
+            @NotEmpty
+            private List<String> exposedHeaders = List.of("Authorization", "X-Total-Count");
         }
         
         @Data
@@ -342,9 +371,12 @@ public class ProductionConfig {
             
             @NotEmpty
             private Map<String, List<String>> rolePermissions = Map.of(
-                    "admin", List.of("*"),
-                    "user", List.of("tool:invoke", "tool:list"),
-                    "readonly", List.of("tool:list", "health:check")
+                    "SUPER_ADMIN", List.of("*"),
+                    "ADMIN", List.of("tool:*", "server:*", "monitoring:*", "config:read"),
+                    "OPERATOR", List.of("tool:invoke", "server:access", "monitoring:read"),
+                    "DEVELOPER", List.of("tool:invoke", "server:echo-server", "monitoring:metrics", "monitoring:tracing"),
+                    "USER", List.of("tool:search", "tool:calculator", "server:public-server"),
+                    "READONLY", List.of("monitoring:health", "monitoring:status")
             );
         }
     }
@@ -506,8 +538,12 @@ public class ProductionConfig {
                 throw new IllegalStateException("Global rate limit must be at least 1 request per minute");
             }
             
-            if (security.enabled && security.auth.enabled && security.auth.tokenExpiration.isNegative()) {
-                throw new IllegalStateException("Token expiration must be positive");
+            if (security.enabled && security.jwt.accessTokenExpiry.isNegative()) {
+                throw new IllegalStateException("Access token expiration must be positive");
+            }
+            
+            if (security.enabled && security.jwt.refreshTokenExpiry.isNegative()) {
+                throw new IllegalStateException("Refresh token expiration must be positive");
             }
         }
     }

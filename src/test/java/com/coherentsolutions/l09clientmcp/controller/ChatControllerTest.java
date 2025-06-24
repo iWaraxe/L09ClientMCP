@@ -1,16 +1,22 @@
 package com.coherentsolutions.l09clientmcp.controller;
 
 import com.coherentsolutions.l09clientmcp.model.ChatRequest;
+import com.coherentsolutions.l09clientmcp.production.audit.AuditLogger;
 import com.coherentsolutions.l09clientmcp.service.ChatService;
 import com.coherentsolutions.l09clientmcp.service.McpClientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,6 +27,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ChatController.class)
+@ActiveProfiles("test")
+@EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class})
+@AutoConfigureMockMvc(addFilters = false)
 class ChatControllerTest {
 
     @Autowired
@@ -52,6 +61,12 @@ class ChatControllerTest {
         @Primary
         public McpClientService mcpClientService() {
             return mock(McpClientService.class);
+        }
+        
+        @Bean
+        @Primary
+        public AuditLogger auditLogger() {
+            return mock(AuditLogger.class);
         }
     }
 

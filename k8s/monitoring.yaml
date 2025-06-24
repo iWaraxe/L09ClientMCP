@@ -1,0 +1,110 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: l09clientmcp-metrics
+  namespace: l09clientmcp
+  labels:
+    app.kubernetes.io/name: l09clientmcp
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: l09clientmcp
+      app.kubernetes.io/instance: production
+  endpoints:
+  - port: http
+    path: /actuator/prometheus
+    interval: 30s
+    scrapeTimeout: 10s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: l09clientmcp-alerts
+  namespace: l09clientmcp
+  labels:
+    app.kubernetes.io/name: l09clientmcp
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: alerts
+spec:
+  groups:
+  - name: l09clientmcp.rules
+    rules:
+    - alert: L09ClientMCPHighErrorRate
+      expr: |
+        (
+          rate(http_server_requests_seconds_count{status=~"5.."}[5m]) / 
+          rate(http_server_requests_seconds_count[5m])
+        ) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+        service: l09clientmcp
+      annotations:
+        summary: "High error rate detected for L09ClientMCP"
+        description: "Error rate is above 10% for the last 5 minutes"
+    
+    - alert: L09ClientMCPHighLatency
+      expr: |
+        histogram_quantile(0.95, 
+          rate(http_server_requests_seconds_bucket[5m])
+        ) > 2
+      for: 5m
+      labels:
+        severity: warning
+        service: l09clientmcp
+      annotations:
+        summary: "High latency detected for L09ClientMCP"
+        description: "95th percentile latency is above 2 seconds"
+    
+    - alert: L09ClientMCPCircuitBreakerOpen
+      expr: |
+        mcp_circuit_breaker_state == 0
+      for: 1m
+      labels:
+        severity: critical
+        service: l09clientmcp
+      annotations:
+        summary: "MCP Circuit breaker is open"
+        description: "Circuit breaker for {{ $labels.server }} is in open state"
+    
+    - alert: L09ClientMCPPodCrashLooping
+      expr: |
+        rate(kube_pod_container_status_restarts_total[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        service: l09clientmcp
+      annotations:
+        summary: "Pod is crash looping"
+        description: "Pod {{ $labels.pod }} is restarting frequently"
+    
+    - alert: L09ClientMCPHighMemoryUsage
+      expr: |
+        (
+          container_memory_usage_bytes{pod=~"l09clientmcp-.*"} / 
+          container_spec_memory_limit_bytes{pod=~"l09clientmcp-.*"}
+        ) > 0.9
+      for: 5m
+      labels:
+        severity: warning
+        service: l09clientmcp
+      annotations:
+        summary: "High memory usage"
+        description: "Memory usage is above 90% for pod {{ $labels.pod }}"
+    
+    - alert: L09ClientMCPHighCPUUsage
+      expr: |
+        (
+          rate(container_cpu_usage_seconds_total{pod=~"l09clientmcp-.*"}[5m]) / 
+          container_spec_cpu_quota{pod=~"l09clientmcp-.*"} * container_spec_cpu_period{pod=~"l09clientmcp-.*"}
+        ) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        service: l09clientmcp
+      annotations:
+        summary: "High CPU usage"
+        description: "CPU usage is above 80% for pod {{ $labels.pod }}"

@@ -2,6 +2,8 @@ package com.coherentsolutions.l09clientmcp.controller;
 
 import com.coherentsolutions.l09clientmcp.model.ChatRequest;
 import com.coherentsolutions.l09clientmcp.model.ChatResponse;
+import com.coherentsolutions.l09clientmcp.production.audit.Auditable;
+import com.coherentsolutions.l09clientmcp.production.audit.AuditEventType;
 import com.coherentsolutions.l09clientmcp.service.ChatService;
 import com.coherentsolutions.l09clientmcp.service.McpClientService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class ChatController {
     private final McpClientService mcpClientService;
 
     @PostMapping
+    @Auditable(eventType = AuditEventType.CHAT_REQUEST, resource = "chat", action = "process_message")
     public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest request) {
         log.info("Received chat request: {}", request.getMessage());
         

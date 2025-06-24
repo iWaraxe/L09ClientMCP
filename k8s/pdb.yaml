@@ -1,0 +1,15 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: l09clientmcp-pdb
+  namespace: l09clientmcp
+  labels:
+    app.kubernetes.io/name: l09clientmcp
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: l09clientmcp
+      app.kubernetes.io/instance: production

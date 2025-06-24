@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: l09clientmcp-config
+  namespace: l09clientmcp
+  labels:
+    app.kubernetes.io/name: l09clientmcp
+    app.kubernetes.io/instance: production
+    app.kubernetes.io/component: config
+data:
+  application.yml: |
+    spring:
+      application:
+        name: L09ClientMCP
+      profiles:
+        active: production
+      
+      ai:
+        mcp:
+          multi-server:
+            enabled: true
+            load-balancing-strategy: ROUND_ROBIN
+            servers:
+              brave-search:
+                enabled: true
+                type: SSE
+                url: "http://brave-search-service:8080"
+                weight: 100
+                health-check:
+                  enabled: true
+                  interval: 30s
+                  timeout: 10s
+          
+          circuit-breaker:
+            failure-threshold: 5
+            timeout: 30s
+            half-open-retry-delay: 60s
+            half-open-max-calls: 3
+            failure-rate-threshold: 50.0
+          
+          retry:
+            max-attempts: 3
+            initial-delay: 1s
+            max-delay: 10s
+            multiplier: 2.0
+          
+          rate-limit:
+            enabled: true
+            capacity: 100
+            refill-tokens: 10
+            refill-period: 1s
+      
+      security:
+        jwt:
+          expiration: 86400 # 24 hours
+        api-key:
+          enabled: true
+    
+    server:
+      port: 8080
+      servlet:
+        context-path: /
+      compression:
+        enabled: true
+        mime-types: application/json,text/html,text/xml,text/plain,text/css,application/javascript
+      
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      endpoint:
+        health:
+          show-details: when-authorized
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+    
+    logging:
+      level:
+        com.coherentsolutions.l09clientmcp: INFO
+        org.springframework.ai: INFO
+        org.springframework.security: INFO
+      pattern:
+        console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+        file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

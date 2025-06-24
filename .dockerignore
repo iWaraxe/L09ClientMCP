@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Maven
+target/
+!target/L09ClientMCP-*.jar
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (exclude from production build)
+docs/
+*.md
+!README.md
+
+# Test files
+src/test/
+
+# Development files
+mvnw*
+.mvn/
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+
+# Node modules (if any)
+node_modules/
+
+# Environment files
+.env
+.env.local

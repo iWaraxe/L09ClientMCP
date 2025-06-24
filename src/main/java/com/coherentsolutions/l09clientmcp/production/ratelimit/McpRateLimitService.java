@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentMap;
     name = "spring.ai.mcp.production.enabled", 
     havingValue = "true"
 )
-@RequiredArgsConstructor
 @Slf4j
 public class McpRateLimitService {
     

@@ -89,7 +89,7 @@ spring:
       
       # Production Configuration (Branch 10)
       production:
-        enabled: false  # Set to true to enable production features
+        enabled: true  # Set to true to enable production features
         environment: dev  # dev, staging, prod
         
         # Monitoring & Observability
@@ -155,19 +155,32 @@ spring:
         # Security
         security:
           enabled: true
-          auth:
-            enabled: true
-            type: jwt
-            issuer: "mcp-client"
-            token-expiration: 1h
+          jwt:
+            secret: ""  # Set via MCP_JWT_SECRET environment variable
+            issuer: "mcp-client-production"
+            audience: "mcp-api"
+            access-token-expiry: 1h
+            refresh-token-expiry: 7d
             require-https: false  # Set to true in production
+          cors:
+            enabled: true
+            allowed-origins:
+              - "http://localhost:3000"
+              - "http://localhost:8080"
+            allow-credentials: true
+            allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowed-headers: ["*"]
+            exposed-headers: ["Authorization", "X-Total-Count"]
           authz:
             enabled: true
             type: rbac
             role-permissions:
-              admin: ["*"]
-              user: ["tool:invoke", "tool:list", "health:check"]
-              readonly: ["tool:list", "health:check"]
+              SUPER_ADMIN: ["*"]
+              ADMIN: ["tool:*", "server:*", "monitoring:*", "config:read"]
+              OPERATOR: ["tool:invoke", "server:access", "monitoring:read"]
+              DEVELOPER: ["tool:invoke", "server:echo-server", "monitoring:metrics", "monitoring:tracing"]
+              USER: ["tool:search", "tool:calculator", "server:public-server"]
+              READONLY: ["monitoring:health", "monitoring:status"]
         
         # Performance Optimization
         performance:

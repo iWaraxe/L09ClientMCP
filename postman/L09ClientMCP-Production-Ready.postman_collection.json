@@ -1,0 +1,745 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "L09ClientMCP - Production Ready",
+		"description": "Complete API testing collection for L09ClientMCP with production-ready features including security, monitoring, and comprehensive error handling.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Health & Status",
+			"item": [
+				{
+					"name": "Chat Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains health info\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include(\"Chat service is running\");",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/chat/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MCP Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has required fields\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('enabled');",
+									"    pm.expect(jsonData).to.have.property('healthy');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mcp/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Production Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/production/monitoring/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"production",
+								"monitoring",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat Operations",
+			"item": [
+				{
+					"name": "Basic Chat",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has chat response\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.length).to.be.greaterThan(0);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Hello! How are you today?\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Technical Question",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has chat response\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(15000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Explain how Spring AI integrates with Model Context Protocol (MCP) and what benefits this provides for AI applications.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chat with Empty Message",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 or handles empty gracefully\", function () {",
+									"    pm.expect([200, 400, 422]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "MCP Operations",
+			"item": [
+				{
+					"name": "List MCP Tools",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has tools array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('tools');",
+									"    pm.expect(jsonData.tools).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/mcp/tools",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MCP Ping",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has success field\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/mcp/ping",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"ping"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invoke Echo Tool",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or tool unavailable\", function () {",
+									"    pm.expect([200, 400]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Response has expected structure\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('success');",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Hello from Postman!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/mcp/tools/echo/invoke",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"echo",
+								"invoke"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Production Monitoring",
+			"item": [
+				{
+					"name": "Production Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/production/monitoring/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"production",
+								"monitoring",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Production Metrics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(3000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/production/monitoring/metrics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"production",
+								"monitoring",
+								"metrics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Handling & Edge Cases",
+			"item": [
+				{
+					"name": "Invalid JSON Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ invalid json }"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Nonexistent Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/nonexistent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"nonexistent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Large Request Body",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or handles large input gracefully\", function () {",
+									"    pm.expect([200, 413, 400]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Response time is reasonable for large input\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"{{large_text}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Performance Tests",
+			"item": [
+				{
+					"name": "Rapid Requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or rate limited\", function () {",
+									"    pm.expect([200, 429]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Response time is acceptable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+									"});",
+									"",
+									"// Set up for rapid fire testing",
+									"pm.globals.set(\"rapid_test_count\", pm.globals.get(\"rapid_test_count\") ? parseInt(pm.globals.get(\"rapid_test_count\")) + 1 : 1);",
+									"",
+									"if (pm.globals.get(\"rapid_test_count\") < 5) {",
+									"    postman.setNextRequest(\"Rapid Requests\");",
+									"} else {",
+									"    pm.globals.unset(\"rapid_test_count\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Quick test message {{$randomInt}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/chat",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set up large text for testing",
+					"const largeText = \"This is a test of how the system handles larger input text. \".repeat(100);",
+					"pm.globals.set(\"large_text\", largeText);",
+					"",
+					"// Log request start time for performance tracking",
+					"pm.globals.set(\"request_start_time\", new Date().getTime());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test for all requests",
+					"pm.test(\"Response has proper headers\", function () {",
+					"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.exist;",
+					"});",
+					"",
+					"// Track request timing",
+					"const startTime = pm.globals.get(\"request_start_time\");",
+					"const endTime = new Date().getTime();",
+					"const duration = endTime - startTime;",
+					"",
+					"console.log(`Request completed in ${duration}ms`);",
+					"",
+					"// Log any error responses for debugging",
+					"if (pm.response.code >= 400) {",
+					"    console.log(`Error Response [${pm.response.code}]: ${pm.response.text()}`);",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: L09ClientMCP-Test
+  
+  ai:
+    openai:
+      api-key: test-key
+    mcp:
+      multi-server:
+        enabled: false
+      production:
+        enabled: false
+  
+  security:
+    jwt:
+      secret: test-jwt-secret
+      expiration: 86400
+    api-key:
+      enabled: false
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: DEBUG
+    org.springframework.security: WARN
+    org.springframework.web: WARN

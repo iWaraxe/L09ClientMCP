@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: L09ClientMCP-Production-Test
+  
+  ai:
+    openai:
+      api-key: test-key
+    mcp:
+      multi-server:
+        enabled: false
+      production:
+        enabled: true # Enable production features for production integration tests
+  
+  security:
+    jwt:
+      secret: test-jwt-secret-for-production-tests
+      expiration: 86400
+    api-key:
+      enabled: false # Disable API key auth for tests
+
+server:
+  port: 0
+
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health,metrics
+
+logging:
+  level:
+    com.coherentsolutions.l09clientmcp: DEBUG
+    org.springframework.security: WARN
+    org.springframework.web: WARN

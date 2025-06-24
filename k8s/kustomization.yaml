@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: l09clientmcp-production
+  namespace: l09clientmcp
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - secret.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - monitoring.yaml
+
+commonLabels:
+  app.kubernetes.io/name: l09clientmcp
+  app.kubernetes.io/instance: production
+  app.kubernetes.io/part-of: spring-ai-mcp
+
+images:
+  - name: l09clientmcp
+    newTag: "1.0.0"
+
+replicas:
+  - name: l09clientmcp
+    count: 3
+
+patches:
+  - target:
+      kind: Deployment
+      name: l09clientmcp
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
