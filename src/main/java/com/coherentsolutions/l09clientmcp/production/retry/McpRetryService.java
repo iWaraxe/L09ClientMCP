@@ -11,6 +11,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.retry.support.RetryTemplateBuilder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -32,6 +33,10 @@ import java.util.function.Supplier;
  * - Resilience patterns in distributed systems
  */
 @Component
+@ConditionalOnProperty(
+    name = "spring.ai.mcp.production.enabled", 
+    havingValue = "true"
+)
 @RequiredArgsConstructor
 @Slf4j
 public class McpRetryService {

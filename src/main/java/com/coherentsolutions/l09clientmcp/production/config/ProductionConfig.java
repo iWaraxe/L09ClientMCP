@@ -140,13 +140,9 @@ public class ProductionConfig {
             private Boolean enabled = true;
             
             @NotNull
-            @Min(5)
-            @Max(300)
             private Duration interval = Duration.ofSeconds(30);
             
             @NotNull
-            @Min(1)
-            @Max(60)
             private Duration timeout = Duration.ofSeconds(5);
             
             @Min(1)

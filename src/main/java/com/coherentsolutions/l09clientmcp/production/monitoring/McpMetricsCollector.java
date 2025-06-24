@@ -2,6 +2,7 @@ package com.coherentsolutions.l09clientmcp.production.monitoring;
 
 import io.micrometer.core.instrument.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -21,6 +22,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * - Operational observability patterns
  */
 @Component
+@ConditionalOnProperty(
+    name = "spring.ai.mcp.production.enabled", 
+    havingValue = "true"
+)
 @Slf4j
 public class McpMetricsCollector {
     

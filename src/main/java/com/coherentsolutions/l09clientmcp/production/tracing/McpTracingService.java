@@ -4,6 +4,7 @@ import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -22,6 +23,10 @@ import java.util.function.Supplier;
  * - Debugging complex distributed operations
  */
 @Component
+@ConditionalOnProperty(
+    name = "spring.ai.mcp.production.enabled", 
+    havingValue = "true"
+)
 @RequiredArgsConstructor
 @Slf4j
 public class McpTracingService {

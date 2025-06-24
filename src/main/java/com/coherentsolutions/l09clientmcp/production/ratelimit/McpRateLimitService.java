@@ -4,6 +4,7 @@ import com.coherentsolutions.l09clientmcp.production.monitoring.McpMetricsCollec
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -23,6 +24,10 @@ import java.util.concurrent.ConcurrentMap;
  * - Integration with monitoring and metrics
  */
 @Component
+@ConditionalOnProperty(
+    name = "spring.ai.mcp.production.enabled", 
+    havingValue = "true"
+)
 @RequiredArgsConstructor
 @Slf4j
 public class McpRateLimitService {
