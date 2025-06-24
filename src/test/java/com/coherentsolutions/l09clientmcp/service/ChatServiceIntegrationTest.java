@@ -2,6 +2,7 @@ package com.coherentsolutions.l09clientmcp.service;
 
 import com.coherentsolutions.l09clientmcp.function.EchoFunction;
 import com.coherentsolutions.l09clientmcp.function.PingFunction;
+import com.coherentsolutions.l09clientmcp.function.SearchFunction;
 import com.coherentsolutions.l09clientmcp.mcp.MockMcpEchoServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,7 @@ class ChatServiceIntegrationTest {
     private McpClientService mcpClientService;
     private EchoFunction echoFunction;
     private PingFunction pingFunction;
+    private SearchFunction searchFunction;
     private ChatService chatService;
 
     @BeforeEach
@@ -57,9 +59,10 @@ class ChatServiceIntegrationTest {
         // Create function instances
         echoFunction = new EchoFunction(mcpClientService);
         pingFunction = new PingFunction(mcpClientService);
+        searchFunction = new SearchFunction(mcpClientService);
         
         // Create chat service
-        chatService = new ChatService(chatClient, mcpClientService, echoFunction, pingFunction);
+        chatService = new ChatService(chatClient, mcpClientService, echoFunction, pingFunction, searchFunction);
         
         // Setup mock chain - use lenient mode for optional stubs
         lenient().when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
@@ -149,7 +152,7 @@ class ChatServiceIntegrationTest {
 
     @Test
     void testNonToolRequestUsesStandardAI() {
-        String userMessage = "What is the weather today?";
+        String userMessage = "What is Java programming?"; // Changed to avoid search trigger
         
         String response = chatService.chat(userMessage);
         
@@ -163,7 +166,7 @@ class ChatServiceIntegrationTest {
     void testMcpDisabledFallsBackToAI() {
         // Create service with MCP disabled
         McpClientService disabledMcpService = new McpClientServiceImpl(false, "STDIO", "30s", echoServer);
-        ChatService disabledChatService = new ChatService(chatClient, disabledMcpService, echoFunction, pingFunction);
+        ChatService disabledChatService = new ChatService(chatClient, disabledMcpService, echoFunction, pingFunction, searchFunction);
         
         String userMessage = "echo Hello World";
         

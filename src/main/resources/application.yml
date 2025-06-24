@@ -27,6 +27,20 @@ spring:
               health-check-interval: 30s
               max-retries: 3
               retry-delay: 5s
+            brave-search:
+              url: "http://localhost:3001/sse"
+              enabled: true
+              health-check-interval: 30s
+              max-retries: 3
+              retry-delay: 5s
+
+# Brave Search API Configuration
+brave:
+  search:
+    api-key: ${BRAVE_API_KEY:YOUR_API_KEY_HERE}
+    base-url: "https://api.search.brave.com"
+    timeout: 30s
+    max-results: 10
         
 # Server configuration
 server:
