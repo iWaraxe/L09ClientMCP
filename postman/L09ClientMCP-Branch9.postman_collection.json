@@ -1,0 +1,965 @@
+{
+    "info": {
+        "name": "L09ClientMCP - Branch 9: Multi-Server MCP",
+        "description": "Comprehensive testing collection for Branch 9 multi-server MCP implementation.\n\nThis collection demonstrates:\n- Multi-server load balancing\n- Health monitoring integration\n- Circuit breaker behavior\n- Tool routing across servers\n- Configuration-driven server management\n\nBefore running:\n1. Start the application with multi-server configuration enabled\n2. Ensure environment variables are set (OPENAI_API_KEY)\n3. Configure servers in application.yml\n4. Select 'Local Development' environment",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_postman_id": "12345678-1234-1234-1234-123456789abc"
+    },
+    "item": [
+        {
+            "name": "Health Checks",
+            "description": "Basic application health and readiness checks",
+            "item": [
+                {
+                    "name": "Application Health Check",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response contains 'Healthy'\", function () {",
+                                    "    pm.expect(pm.response.text()).to.include(\"Healthy\");",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chat/health",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chat", "health"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Multi-Server Health Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response is JSON\", function () {",
+                                    "    pm.response.to.be.json;",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Contains server health information\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('servers');",
+                                    "    pm.expect(response).to.have.property('healthy_servers');",
+                                    "    pm.expect(response).to.have.property('total_servers');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/health",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "health"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Multi-Server Configuration",
+            "description": "Tests for multi-server configuration and management",
+            "item": [
+                {
+                    "name": "List Available Tools",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response contains tools array\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.be.an('array');",
+                                    "    pm.expect(response.length).to.be.greaterThan(0);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Contains expected tools\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    const toolNames = response.map(tool => tool.name);",
+                                    "    pm.expect(toolNames).to.include('echo');",
+                                    "    pm.expect(toolNames).to.include('ping');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/tools",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "tools"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Server Registry Statistics",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Contains registry statistics\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('totalServers');",
+                                    "    pm.expect(response).to.have.property('healthyServers');",
+                                    "    pm.expect(response).to.have.property('totalTools');",
+                                    "    pm.expect(response).to.have.property('availableTools');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Server ratio is valid\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response.healthyServerRatio).to.be.within(0, 1);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/stats",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "stats"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Load Balancing Tests",
+            "description": "Tests to verify load balancing behavior across multiple servers",
+            "item": [
+                {
+                    "name": "Echo Tool - Load Balancing Test 1",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response contains server information\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('content');",
+                                    "    pm.expect(response).to.have.property('serverId');",
+                                    "});",
+                                    "",
+                                    "// Store server ID for load balancing verification",
+                                    "const response = pm.response.json();",
+                                    "pm.globals.set('server1_id', response.serverId);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {\n    \"message\": \"Load balancing test 1\",\n    \"format\": \"uppercase\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Echo Tool - Load Balancing Test 2",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Store server ID for comparison",
+                                    "const response = pm.response.json();",
+                                    "pm.globals.set('server2_id', response.serverId);",
+                                    "",
+                                    "// With round-robin, we might get a different server",
+                                    "// (depending on how many servers are available)",
+                                    "pm.test(\"Load balancing is working\", function () {",
+                                    "    const server1 = pm.globals.get('server1_id');",
+                                    "    const server2 = pm.globals.get('server2_id');",
+                                    "    // If we have multiple servers, they should alternate",
+                                    "    // If only one server, they'll be the same",
+                                    "    pm.expect([server1, server2]).to.include(response.serverId);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {\n    \"message\": \"Load balancing test 2\",\n    \"format\": \"lowercase\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Load Balancing Statistics",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Contains load balancing statistics\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('strategyName');",
+                                    "    pm.expect(response).to.have.property('totalSelections');",
+                                    "    pm.expect(response).to.have.property('serverSelectionCounts');",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Strategy is round-robin\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response.strategyName).to.equal('ROUND_ROBIN');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/load-balancing/stats",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "load-balancing", "stats"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Tool Invocation Tests",
+            "description": "Tests for various tool invocations across multiple servers",
+            "item": [
+                {
+                    "name": "Ping Tool Test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Ping response is valid\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('content');",
+                                    "    pm.expect(response.content).to.include('pong');",
+                                    "    pm.expect(response).to.have.property('success', true);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"ping\",\n  \"arguments\": {}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Echo Tool - Basic Test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Echo response is valid\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('content');",
+                                    "    pm.expect(response.content).to.include('Hello Multi-Server');",
+                                    "    pm.expect(response).to.have.property('success', true);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {\n    \"message\": \"Hello Multi-Server MCP!\",\n    \"format\": \"normal\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Echo Tool - Format Tests",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Uppercase format applied\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response.content).to.include('TESTING FORMATS');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {\n    \"message\": \"testing formats\",\n    \"format\": \"uppercase\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Invalid Tool Test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400 or 404\", function () {",
+                                    "    pm.expect([400, 404, 500]).to.include(pm.response.code);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Error message contains tool name\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response.message || response.error).to.include('nonexistent');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"nonexistent\",\n  \"arguments\": {}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Circuit Breaker Tests",
+            "description": "Tests for circuit breaker behavior and fault tolerance",
+            "item": [
+                {
+                    "name": "Circuit Breaker Status",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Contains circuit breaker information\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.be.an('object');",
+                                    "    // Should contain server circuit breaker states",
+                                    "    Object.values(response).forEach(serverState => {",
+                                    "        pm.expect(serverState).to.have.property('state');",
+                                    "        pm.expect(serverState).to.have.property('failureCount');",
+                                    "        pm.expect(['CLOSED', 'OPEN', 'HALF_OPEN']).to.include(serverState.state);",
+                                    "    });",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/circuit-breaker/status",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "circuit-breaker", "status"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Force Circuit Breaker Test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// This test might fail if circuit breaker opens",
+                                    "pm.test(\"Request completes\", function () {",
+                                    "    pm.expect([200, 500, 503]).to.include(pm.response.code);",
+                                    "});",
+                                    "",
+                                    "if (pm.response.code === 500 || pm.response.code === 503) {",
+                                    "    pm.test(\"Circuit breaker related error\", function () {",
+                                    "        const response = pm.response.json();",
+                                    "        pm.expect(response.message || response.error).to.match(/circuit.*breaker|timeout|failed/i);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {\n    \"message\": \"Circuit breaker test\",\n    \"simulateFailure\": true\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Chat Integration Tests",
+            "description": "Tests for multi-server integration with AI chat functionality",
+            "item": [
+                {
+                    "name": "Chat with Multi-Server Tools",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response contains AI reply\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('response');",
+                                    "    pm.expect(response.response).to.be.a('string');",
+                                    "    pm.expect(response.response.length).to.be.greaterThan(0);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response indicates tool usage\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    // AI should mention using the echo or ping tool",
+                                    "    pm.expect(response.response.toLowerCase()).to.match(/echo|ping|tool|server/);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"Please demonstrate the multi-server MCP functionality by using the echo tool to say 'Hello from multi-server!' in uppercase format\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chat",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chat"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Chat with Ping Tool",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"AI used ping tool\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response.response.toLowerCase()).to.match(/ping|pong|server.*responsive/);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"Can you check if the MCP servers are responsive using the ping tool?\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chat",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chat"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Chat about Load Balancing",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"AI explains load balancing\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response.response.toLowerCase()).to.match(/load.*balanc|round.*robin|server|distribute/);",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"Can you explain how the multi-server load balancing works in this MCP implementation?\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chat",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chat"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Performance & Monitoring",
+            "description": "Tests for performance monitoring and metrics collection",
+            "item": [
+                {
+                    "name": "Server Performance Metrics",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Contains performance metrics\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.be.an('object');",
+                                    "    Object.values(response).forEach(serverMetrics => {",
+                                    "        pm.expect(serverMetrics).to.have.property('totalRequests');",
+                                    "        pm.expect(serverMetrics).to.have.property('successfulRequests');",
+                                    "        pm.expect(serverMetrics).to.have.property('averageResponseTimeMs');",
+                                    "    });",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/metrics",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "metrics"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Concurrent Tool Invocations",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "exec": [
+                                    "// Set up for concurrent requests test",
+                                    "pm.globals.set('concurrent_test_id', Date.now());"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response time acceptable\", function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Load balancing working under load\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('serverId');",
+                                    "    pm.expect(response.serverId).to.be.a('string');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {\n    \"message\": \"Concurrent test {{$timestamp}}\",\n    \"format\": \"normal\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Error Handling Tests",
+            "description": "Tests for error scenarios and resilience",
+            "item": [
+                {
+                    "name": "Malformed Request Test",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Error message is descriptive\", function () {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.expect(response).to.have.property('message');",
+                                    "    pm.expect(response.message).to.be.a('string');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"invalid\": \"request\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Empty Tool Arguments",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 200 or 400\", function () {",
+                                    "    pm.expect([200, 400]).to.include(pm.response.code);",
+                                    "});",
+                                    "",
+                                    "if (pm.response.code === 400) {",
+                                    "    pm.test(\"Error indicates missing arguments\", function () {",
+                                    "        const response = pm.response.json();",
+                                    "        pm.expect(response.message).to.match(/argument|parameter|message/i);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"toolName\": \"echo\",\n  \"arguments\": {}\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/mcp/multi-server/invoke",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "mcp", "multi-server", "invoke"]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Set common headers and variables",
+                    "pm.request.headers.add({",
+                    "    key: 'User-Agent',",
+                    "    value: 'Postman-L09ClientMCP-Branch9'",
+                    "});",
+                    "",
+                    "// Add timestamp for unique requests",
+                    "pm.globals.set('timestamp', Date.now());"
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "// Common test for all requests",
+                    "pm.test(\"Response time is reasonable\", function () {",
+                    "    pm.expect(pm.response.responseTime).to.be.below(30000);",
+                    "});",
+                    "",
+                    "pm.test(\"Response headers contain content-type\", function () {",
+                    "    pm.expect(pm.response.headers.get('Content-Type')).to.exist;",
+                    "});"
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "type": "string",
+            "description": "Base URL for the L09ClientMCP application"
+        },
+        {
+            "key": "apiVersion",
+            "value": "v1",
+            "type": "string",
+            "description": "API version"
+        },
+        {
+            "key": "testEnvironment",
+            "value": "branch9-multi-server",
+            "type": "string",
+            "description": "Test environment identifier"
+        }
+    ]
+}

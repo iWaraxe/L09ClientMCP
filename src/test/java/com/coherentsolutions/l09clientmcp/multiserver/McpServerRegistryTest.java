@@ -12,6 +12,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
 
 /**
  * Unit tests for McpServerRegistry.
@@ -41,18 +42,18 @@ class McpServerRegistryTest {
     void setUp() {
         registry = new McpServerRegistry();
         
-        // Setup mock servers
-        when(server1.getServerId()).thenReturn("server1");
-        when(server1.getUrl()).thenReturn("mock://server1");
-        when(server1.getAvailableTools()).thenReturn(Set.of("echo", "ping"));
+        // Setup mock servers with lenient stubbing to avoid UnnecessaryStubbing exceptions
+        lenient().when(server1.getServerId()).thenReturn("server1");
+        lenient().when(server1.getUrl()).thenReturn("mock://server1");
+        lenient().when(server1.getAvailableTools()).thenReturn(Set.of("echo", "ping"));
         
-        when(server2.getServerId()).thenReturn("server2");
-        when(server2.getUrl()).thenReturn("mock://server2");
-        when(server2.getAvailableTools()).thenReturn(Set.of("echo", "search"));
+        lenient().when(server2.getServerId()).thenReturn("server2");
+        lenient().when(server2.getUrl()).thenReturn("mock://server2");
+        lenient().when(server2.getAvailableTools()).thenReturn(Set.of("echo", "search"));
         
-        when(server3.getServerId()).thenReturn("server3");
-        when(server3.getUrl()).thenReturn("mock://server3");
-        when(server3.getAvailableTools()).thenReturn(Set.of("calculate", "convert"));
+        lenient().when(server3.getServerId()).thenReturn("server3");
+        lenient().when(server3.getUrl()).thenReturn("mock://server3");
+        lenient().when(server3.getAvailableTools()).thenReturn(Set.of("calculate", "convert"));
     }
     
     @Test

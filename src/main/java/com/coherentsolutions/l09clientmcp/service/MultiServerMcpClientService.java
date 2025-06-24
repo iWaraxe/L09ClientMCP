@@ -4,8 +4,8 @@ import com.coherentsolutions.l09clientmcp.config.MultiServerConfig;
 import com.coherentsolutions.l09clientmcp.mcp.McpTool;
 import com.coherentsolutions.l09clientmcp.mcp.McpToolResult;
 import com.coherentsolutions.l09clientmcp.multiserver.*;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -33,15 +33,30 @@ import java.util.stream.Collectors;
     havingValue = "true"
 )
 @Slf4j
-@RequiredArgsConstructor
 public class MultiServerMcpClientService implements McpClientService {
     
     private final MultiServerConfig config;
     private final McpServerRegistry serverRegistry;
-    private final ServerSelector roundRobinSelector;
+    private final RoundRobinServerSelector roundRobinSelector;
     private final WeightedServerSelector weightedSelector;
     private final McpCircuitBreaker circuitBreaker;
     private final McpHealthMonitor healthMonitor;
+    
+    public MultiServerMcpClientService(
+            MultiServerConfig config,
+            McpServerRegistry serverRegistry,
+            @Qualifier("roundRobinServerSelector") RoundRobinServerSelector roundRobinSelector,
+            @Qualifier("weightedServerSelector") WeightedServerSelector weightedSelector,
+            McpCircuitBreaker circuitBreaker,
+            McpHealthMonitor healthMonitor
+    ) {
+        this.config = config;
+        this.serverRegistry = serverRegistry;
+        this.roundRobinSelector = roundRobinSelector;
+        this.weightedSelector = weightedSelector;
+        this.circuitBreaker = circuitBreaker;
+        this.healthMonitor = healthMonitor;
+    }
     
     private ServerSelector activeSelector;
     

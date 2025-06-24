@@ -39,7 +39,8 @@ import static org.junit.jupiter.api.Assertions.*;
     "spring.ai.mcp.multi-server.servers.mock-server-2.type=MOCK",
     "spring.ai.mcp.multi-server.servers.mock-server-2.tools[0]=echo",
     "spring.ai.mcp.multi-server.servers.mock-server-2.tools[1]=ping",
-    "spring.ai.mcp.multi-server.servers.mock-server-2.enabled=true"
+    "spring.ai.mcp.multi-server.servers.mock-server-2.enabled=true",
+    "spring.ai.mcp.client.enabled=false"
 })
 @ConditionalOnProperty(name = "spring.ai.mcp.multi-server.enabled", havingValue = "true")
 class MultiServerIntegrationTest {

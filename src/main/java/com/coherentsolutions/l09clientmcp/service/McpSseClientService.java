@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @ConditionalOnProperty(value = "spring.ai.mcp.client.type", havingValue = "SYNC")
+@ConditionalOnProperty(value = "spring.ai.mcp.multi-server.enabled", havingValue = "false", matchIfMissing = true)
 public class McpSseClientService implements McpClientService {
     
     private final boolean mcpEnabled;
