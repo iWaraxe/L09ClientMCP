@@ -39,6 +39,9 @@ class ChatServiceIntegrationTest {
     @Mock
     private ChatClient.CallResponseSpec callSpec;
 
+    @Mock
+    private AppleScriptService appleScriptService;
+
     private MockMcpEchoServer echoServer;
     private McpClientService mcpClientService;
     private EchoFunction echoFunction;
@@ -62,12 +65,15 @@ class ChatServiceIntegrationTest {
         searchFunction = new SearchFunction(mcpClientService);
         
         // Create chat service
-        chatService = new ChatService(chatClient, mcpClientService, echoFunction, pingFunction, searchFunction);
+        chatService = new ChatService(chatClient, mcpClientService, echoFunction, pingFunction, searchFunction, appleScriptService);
         
         // Setup mock chain - use lenient mode for optional stubs
         lenient().when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
         lenient().when(requestSpec.call()).thenReturn(callSpec);
         lenient().when(callSpec.content()).thenReturn("Standard AI response");
+        
+        // Setup AppleScript service mock
+        lenient().when(appleScriptService.isAppleScriptAvailable()).thenReturn(false);
     }
 
     @Test
@@ -166,7 +172,7 @@ class ChatServiceIntegrationTest {
     void testMcpDisabledFallsBackToAI() {
         // Create service with MCP disabled
         McpClientService disabledMcpService = new McpClientServiceImpl(false, "STDIO", "30s", echoServer);
-        ChatService disabledChatService = new ChatService(chatClient, disabledMcpService, echoFunction, pingFunction, searchFunction);
+        ChatService disabledChatService = new ChatService(chatClient, disabledMcpService, echoFunction, pingFunction, searchFunction, appleScriptService);
         
         String userMessage = "echo Hello World";
         

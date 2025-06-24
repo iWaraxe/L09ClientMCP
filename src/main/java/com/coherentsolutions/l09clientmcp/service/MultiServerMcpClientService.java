@@ -4,6 +4,7 @@ import com.coherentsolutions.l09clientmcp.config.MultiServerConfig;
 import com.coherentsolutions.l09clientmcp.mcp.McpTool;
 import com.coherentsolutions.l09clientmcp.mcp.McpToolResult;
 import com.coherentsolutions.l09clientmcp.multiserver.*;
+import com.coherentsolutions.l09clientmcp.multiserver.StdioMcpServerConnection;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -313,9 +314,32 @@ public class MultiServerMcpClientService implements McpClientService {
         return switch (config.getType()) {
             case MOCK -> new MockMcpServerConnection(serverId);
             case SSE -> throw new UnsupportedOperationException("SSE connections not yet implemented in multi-server");
-            case STDIO -> throw new UnsupportedOperationException("STDIO connections not yet implemented in multi-server");
+            case STDIO -> createStdioConnection(serverId, config);
             default -> throw new IllegalArgumentException("Unsupported server type: " + config.getType());
         };
+    }
+    
+    private McpServerConnection createStdioConnection(String serverId, MultiServerConfig.ServerConfig config) {
+        // Extract STDIO-specific configuration from metadata
+        Map<String, Object> metadata = config.getMetadata();
+        if (metadata == null) {
+            throw new IllegalArgumentException("STDIO server " + serverId + " missing metadata configuration");
+        }
+        
+        String command = (String) metadata.get("command");
+        if (command == null || command.trim().isEmpty()) {
+            throw new IllegalArgumentException("STDIO server " + serverId + " missing command");
+        }
+        
+        @SuppressWarnings("unchecked")
+        List<String> args = (List<String>) metadata.get("args");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, String> env = (Map<String, String>) metadata.get("env");
+        
+        log.info("Creating STDIO connection for server {} with command: {}", serverId, command);
+        
+        return new StdioMcpServerConnection(serverId, command, args, env);
     }
     
     private void configureCircuitBreakers() {

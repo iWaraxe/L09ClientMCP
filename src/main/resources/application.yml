@@ -86,6 +86,42 @@ spring:
             enabled: false
             connection-timeout: 5s
             description: "Mathematical calculations server"
+          # Claude Desktop MCP Servers
+          applescript-server:
+            url: "stdio://applescript"
+            type: STDIO
+            tools: ["run_applescript", "get_system_info", "show_notification"]
+            weight: 2
+            enabled: true
+            connection-timeout: 30s
+            description: "AppleScript execution server from Claude Desktop"
+            metadata:
+              command: "npx"
+              args: ["@peakmojo/applescript-mcp"]
+              env:
+                NODE_ENV: "production"
+          filesystem-server:
+            url: "stdio://filesystem"
+            type: STDIO
+            tools: ["read_file", "write_file", "list_directory", "create_directory"]
+            weight: 1
+            enabled: true
+            connection-timeout: 30s
+            description: "Filesystem access server from Claude Desktop"
+            metadata:
+              command: "npx"
+              args: ["-y", "@modelcontextprotocol/server-filesystem", "/Users/igorwaraxe/Desktop", "/Users/igorwaraxe/Downloads"]
+          browser-server:
+            url: "stdio://browser"
+            type: STDIO
+            tools: ["browse_website", "take_screenshot", "extract_content"]
+            weight: 1
+            enabled: false
+            connection-timeout: 45s
+            description: "Browser automation server from Claude Desktop"
+            metadata:
+              command: "npx"
+              args: ["@browsermcp/mcp@latest"]
 
 # Brave Search API Configuration
 brave:

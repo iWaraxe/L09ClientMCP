@@ -48,7 +48,11 @@ HTTP Request → ChatController → ChatService → MCP Client → MCP Servers
 ### Key Components
 
 - **ChatController**: REST endpoints at `/api/chat` (POST) and `/api/chat/health` (GET)
+- **AppleScriptController**: REST endpoints for macOS system control via AppleScript MCP
 - **ChatService**: Business logic using Spring AI's ChatClient with system/user message handling
+- **AppleScriptService**: High-level service for macOS desktop integration
+- **MultiServerMcpClientService**: Manages multiple MCP server connections with load balancing
+- **StdioMcpServerConnection**: STDIO transport implementation for process-based MCP servers
 - **ChatClientConfig**: Bean configuration for Spring AI ChatClient
 - **Models**: ChatRequest/ChatResponse DTOs using Lombok
 
@@ -56,7 +60,7 @@ HTTP Request → ChatController → ChatService → MCP Client → MCP Servers
 
 The project teaches MCP concepts through 10 incremental branches:
 
-1. **mcp-intro-baseline** - Basic chatbot without MCP (current)
+1. **mcp-intro-baseline** - Basic chatbot without MCP
 2. **mcp-client-setup** - Add MCP dependencies and configuration
 3. **mcp-echo-server** - Create mock server with STDIO transport
 4. **mcp-tool-discovery** - Implement tool listing capability
@@ -65,7 +69,7 @@ The project teaches MCP concepts through 10 incremental branches:
 7. **mcp-sse-transport** - Switch to SSE HTTP transport
 8. **mcp-brave-search** - Real Brave Search integration
 9. **mcp-multi-server** - Multiple MCP server connections
-10. **mcp-production-ready** - Production features (retry, monitoring)
+10. **mcp-claude-desktop-integration** - STDIO transport with Claude Desktop MCP servers (current)
 
 Each branch adds 1-2 concepts with 50-150 lines of code change.
 
@@ -142,11 +146,22 @@ class ControllerTest {
   - Response: `{"response": "AI response"}`
 - `GET /api/chat/health` - Health check
 
-### Future MCP Endpoints (planned)
-- `POST /mcp/ping` - Test MCP connection
-- `GET /mcp/tools` - List available MCP tools
-- `POST /mcp/calculate` - Invoke calculator tool
-- `POST /mcp/search` - Web search via MCP
+### MCP Management Endpoints
+- `GET /api/mcp/status` - MCP system status and health
+- `GET /api/mcp/tools` - List available MCP tools
+- `POST /api/mcp/tools/{toolName}/invoke` - Invoke specific MCP tool
+
+### AppleScript Integration Endpoints (macOS)
+- `GET /api/applescript/status` - Check AppleScript MCP availability
+- `GET /api/applescript/battery` - Get Mac battery status
+- `POST /api/applescript/notification` - Show system notification
+  - Request: `{"title": "Title", "message": "Message"}`
+- `GET /api/applescript/system-info` - Get Mac system information
+- `GET /api/applescript/volume` - Get current volume level
+- `POST /api/applescript/volume` - Set volume level
+  - Request: `{"volume": 75}`
+- `POST /api/applescript/open-app` - Open macOS application
+  - Request: `{"appName": "Calculator"}`
 
 ## Testing and Demonstration
 
@@ -155,6 +170,9 @@ class ControllerTest {
 # Quick API test suite
 ./test-examples.sh
 
+# AppleScript integration testing (macOS only)
+./test-applescript.sh
+
 # Manual health check
 curl http://localhost:8080/api/chat/health
 
@@ -162,6 +180,16 @@ curl http://localhost:8080/api/chat/health
 curl -X POST http://localhost:8080/api/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "Hello, AI!"}'
+
+# Test battery status via chat
+curl -X POST http://localhost:8080/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is my Mac battery status?"}'
+
+# Test system notification
+curl -X POST http://localhost:8080/api/applescript/notification \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Spring AI", "message": "MCP Integration Working!"}'
 ```
 
 ### Visual Testing with Postman

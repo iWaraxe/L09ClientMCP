@@ -1,0 +1,1235 @@
+{
+	"info": {
+		"_postman_id": "claude-desktop-mcp-integration",
+		"name": "Claude Desktop MCP Integration",
+		"description": "Comprehensive test collection for Spring AI with Claude Desktop MCP server integration. This collection demonstrates stunning desktop system integration capabilities through AppleScript automation, multi-server MCP architecture, and natural language processing.\n\n## Features Demonstrated:\n- 🍎 macOS System Control via AppleScript MCP\n- 🔄 Multi-Server Load Balancing\n- 💬 Natural Language to System Action\n- 🛠️ STDIO Transport Implementation\n- 📊 Real-time System Monitoring\n\n## Usage:\n1. Start the Spring Boot application\n2. Ensure you're running on macOS for AppleScript features\n3. Run requests individually or execute the entire collection\n4. Watch for actual system changes (notifications, volume, etc.)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "claude-desktop-mcp"
+	},
+	"item": [
+		{
+			"name": "🏥 Health & Status Checks",
+			"item": [
+				{
+					"name": "Application Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Application is running\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains health info\", function () {",
+									"    const responseText = pm.response.text();",
+									"    pm.expect(responseText).to.include(\"Chat service is running\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/chat/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat",
+								"health"
+							]
+						},
+						"description": "Check if the Spring Boot application is running and MCP is healthy."
+					},
+					"response": []
+				},
+				{
+					"name": "MCP System Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"MCP status retrieved\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Contains MCP status fields\", function () {",
+									"    pm.expect(jsonData).to.have.property('enabled');",
+									"    pm.expect(jsonData).to.have.property('healthy');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"status"
+							]
+						},
+						"description": "Get detailed MCP system status including enabled state, health, and server information."
+					},
+					"response": []
+				},
+				{
+					"name": "AppleScript MCP Availability",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"AppleScript status retrieved\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Platform information included\", function () {",
+									"    pm.expect(jsonData).to.have.property('platform');",
+									"    pm.expect(jsonData).to.have.property('available');",
+									"});",
+									"",
+									"// Store availability for other tests",
+									"pm.globals.set('appleScriptAvailable', jsonData.available);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"status"
+							]
+						},
+						"description": "Check if AppleScript MCP server is available and running. This will show the platform and availability status."
+					},
+					"response": []
+				}
+			],
+			"description": "Basic health checks to ensure all systems are operational before running demonstrations."
+		},
+		{
+			"name": "🛠️ MCP Tools Discovery",
+			"item": [
+				{
+					"name": "List All Available MCP Tools",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Tools list retrieved\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Tools array exists\", function () {",
+									"    pm.expect(jsonData).to.have.property('tools');",
+									"    pm.expect(jsonData.tools).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Tool count provided\", function () {",
+									"    pm.expect(jsonData).to.have.property('count');",
+									"    pm.expect(jsonData.count).to.be.a('number');",
+									"});",
+									"",
+									"// Display tool summary in test results",
+									"if (jsonData.tools.length > 0) {",
+									"    const toolNames = jsonData.tools.map(tool => tool.name).join(', ');",
+									"    pm.test(`Found ${jsonData.count} tools: ${toolNames}`, function () {",
+									"        pm.expect(jsonData.count).to.be.greaterThan(0);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools"
+							]
+						},
+						"description": "Discover all available MCP tools across all connected servers. This shows the multi-server capability and tool aggregation."
+					},
+					"response": []
+				},
+				{
+					"name": "Test Echo Tool (Mock Server)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Echo tool executed successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Echo response is successful\", function () {",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test(\"Echo content returned\", function () {",
+									"    pm.expect(jsonData).to.have.property('content');",
+									"    pm.expect(jsonData.content).to.include('Hello MCP Demo');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Hello MCP Demo\",\n    \"format\": \"uppercase\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools/echo/invoke",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"echo",
+								"invoke"
+							]
+						},
+						"description": "Test the echo tool from the mock MCP server to verify basic tool invocation functionality."
+					},
+					"response": []
+				},
+				{
+					"name": "Test Ping Tool (Connectivity)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Ping tool executed successfully\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Ping response is successful\", function () {",
+									"    pm.expect(jsonData).to.have.property('success', true);",
+									"});",
+									"",
+									"pm.test(\"Ping metadata included\", function () {",
+									"    pm.expect(jsonData).to.have.property('metadata');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools/ping/invoke",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"ping",
+								"invoke"
+							]
+						},
+						"description": "Test MCP server connectivity using the ping tool."
+					},
+					"response": []
+				}
+			],
+			"description": "Discover and test available MCP tools to verify the multi-server architecture is working correctly."
+		},
+		{
+			"name": "🍎 AppleScript Desktop Integration",
+			"item": [
+				{
+					"name": "Get Mac Battery Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.globals.get('appleScriptAvailable') === 'true' || pm.globals.get('appleScriptAvailable') === true) {",
+									"    pm.test(\"Battery status retrieved successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"Battery info included in response\", function () {",
+									"        pm.expect(jsonData).to.have.property('success');",
+									"        pm.expect(jsonData).to.have.property('battery_info');",
+									"    });",
+									"} else {",
+									"    pm.test(\"AppleScript not available (expected on non-macOS)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/battery",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"battery"
+							]
+						},
+						"description": "🔋 Get real-time battery status from macOS using AppleScript MCP. This demonstrates actual system integration!"
+					},
+					"response": []
+				},
+				{
+					"name": "Show System Notification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.globals.get('appleScriptAvailable') === 'true' || pm.globals.get('appleScriptAvailable') === true) {",
+									"    pm.test(\"Notification sent successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"Notification result included\", function () {",
+									"        pm.expect(jsonData).to.have.property('success');",
+									"        pm.expect(jsonData).to.have.property('result');",
+									"    });",
+									"    ",
+									"    pm.test(\"🎉 Check your Mac for the notification!\", function () {",
+									"        pm.expect(jsonData.success).to.be.true;",
+									"    });",
+									"} else {",
+									"    pm.test(\"AppleScript not available (expected on non-macOS)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"🚀 Spring AI MCP Demo\",\n    \"message\": \"Claude Desktop integration is working perfectly! 🎉\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/notification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"notification"
+							]
+						},
+						"description": "📢 AMAZING DEMO: Send a real macOS system notification! Watch for the notification to appear in the top-right corner of the screen."
+					},
+					"response": []
+				},
+				{
+					"name": "Get System Information",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.globals.get('appleScriptAvailable') === 'true' || pm.globals.get('appleScriptAvailable') === true) {",
+									"    pm.test(\"System info retrieved successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"System info included in response\", function () {",
+									"        pm.expect(jsonData).to.have.property('success');",
+									"        pm.expect(jsonData).to.have.property('system_info');",
+									"    });",
+									"} else {",
+									"    pm.test(\"AppleScript not available (expected on non-macOS)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/system-info",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"system-info"
+							]
+						},
+						"description": "💻 Get comprehensive Mac system information including computer name, OS version, uptime, and memory status."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current Volume Level",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.globals.get('appleScriptAvailable') === 'true' || pm.globals.get('appleScriptAvailable') === true) {",
+									"    pm.test(\"Volume info retrieved successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"Volume info included in response\", function () {",
+									"        pm.expect(jsonData).to.have.property('success');",
+									"        pm.expect(jsonData).to.have.property('volume_info');",
+									"    });",
+									"} else {",
+									"    pm.test(\"AppleScript not available (expected on non-macOS)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/volume",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"volume"
+							]
+						},
+						"description": "🔊 Get the current system volume level from macOS."
+					},
+					"response": []
+				},
+				{
+					"name": "Set Volume to 50%",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.globals.get('appleScriptAvailable') === 'true' || pm.globals.get('appleScriptAvailable') === true) {",
+									"    pm.test(\"Volume set successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"Volume change result included\", function () {",
+									"        pm.expect(jsonData).to.have.property('success');",
+									"        pm.expect(jsonData).to.have.property('result');",
+									"    });",
+									"    ",
+									"    pm.test(\"🔊 Volume should be set to 50% - listen for the change!\", function () {",
+									"        pm.expect(jsonData.success).to.be.true;",
+									"    });",
+									"} else {",
+									"    pm.test(\"AppleScript not available (expected on non-macOS)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"volume\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/volume",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"volume"
+							]
+						},
+						"description": "🎚️ SPECTACULAR DEMO: Actually change the Mac system volume to 50%! You should hear the volume change immediately."
+					},
+					"response": []
+				},
+				{
+					"name": "Open Calculator App",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.globals.get('appleScriptAvailable') === 'true' || pm.globals.get('appleScriptAvailable') === true) {",
+									"    pm.test(\"App launch command sent successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"App launch result included\", function () {",
+									"        pm.expect(jsonData).to.have.property('success');",
+									"        pm.expect(jsonData).to.have.property('result');",
+									"    });",
+									"    ",
+									"    pm.test(\"📱 Calculator app should open - check your Mac!\", function () {",
+									"        pm.expect(jsonData.success).to.be.true;",
+									"    });",
+									"} else {",
+									"    pm.test(\"AppleScript not available (expected on non-macOS)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"appName\": \"Calculator\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/open-app",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"open-app"
+							]
+						},
+						"description": "🚀 INCREDIBLE DEMO: Launch the Calculator app on macOS! Watch as the app actually opens on your Mac."
+					},
+					"response": []
+				}
+			],
+			"description": "🍎 STUNNING DEMONSTRATIONS: Real macOS system integration via AppleScript MCP. These requests actually control your Mac!"
+		},
+		{
+			"name": "💬 Natural Language Chat Integration",
+			"item": [
+				{
+					"name": "Chat - Battery Status Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Chat response received\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Chat response contains battery info\", function () {",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('battery') || text.includes('not available') || text.includes('applescript');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What is my Mac battery status?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "🔋 NATURAL LANGUAGE MAGIC: Ask about battery status in plain English and get real system data!"
+					},
+					"response": []
+				},
+				{
+					"name": "Chat - Show Notification Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Chat response received\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Chat response about notification\", function () {",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('notification') || text.includes('not available') || text.includes('applescript');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Show me a notification saying Spring AI MCP is amazing!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "📢 MIND-BLOWING: Use natural language to trigger system notifications! The AI understands and executes the request."
+					},
+					"response": []
+				},
+				{
+					"name": "Chat - Volume Control Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Chat response received\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Chat response about volume\", function () {",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('volume') || text.includes('not available') || text.includes('applescript');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"What is my current volume level?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "🎚️ CONVERSATIONAL SYSTEM CONTROL: Ask about volume in natural language and get real system information!"
+					},
+					"response": []
+				},
+				{
+					"name": "Chat - System Info Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Chat response received\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Chat response about system info\", function () {",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    const response = jsonData.response.toLowerCase();",
+									"    pm.expect(response).to.satisfy(function(text) {",
+									"        return text.includes('system') || text.includes('mac') || text.includes('not available') || text.includes('applescript');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Tell me about my Mac system information\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "💻 INTELLIGENT SYSTEM MONITORING: Get comprehensive system information through natural conversation!"
+					},
+					"response": []
+				},
+				{
+					"name": "Chat - General Conversation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Chat response received\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Chat response is meaningful\", function () {",
+									"    pm.expect(jsonData).to.have.property('response');",
+									"    pm.expect(jsonData.response).to.be.a('string');",
+									"    pm.expect(jsonData.response.length).to.be.greaterThan(10);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Hello! Can you tell me what amazing capabilities you have with MCP integration?\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "🤖 SHOWCASE CONVERSATION: Let the AI explain its own capabilities including desktop integration features!"
+					},
+					"response": []
+				}
+			],
+			"description": "💬 NATURAL LANGUAGE POWER: Demonstrate how plain English requests get intelligently routed to appropriate system functions!"
+		},
+		{
+			"name": "🔄 Load Balancing & Multi-Server Demo",
+			"item": [
+				{
+					"name": "Echo Test 1 (Load Balancing)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Echo request 1 successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Echo response contains metadata\", function () {",
+									"    pm.expect(jsonData).to.have.property('metadata');",
+									"    pm.expect(jsonData.metadata).to.have.property('server_id');",
+									"});",
+									"",
+									"// Store server ID for load balancing verification",
+									"pm.globals.set('echo1_server', jsonData.metadata.server_id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Load Balance Test 1\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools/echo/invoke",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"echo",
+								"invoke"
+							]
+						},
+						"description": "🔄 First echo request to demonstrate load balancing across multiple MCP servers."
+					},
+					"response": []
+				},
+				{
+					"name": "Echo Test 2 (Load Balancing)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Echo request 2 successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Echo response contains metadata\", function () {",
+									"    pm.expect(jsonData).to.have.property('metadata');",
+									"    pm.expect(jsonData.metadata).to.have.property('server_id');",
+									"});",
+									"",
+									"// Store server ID for load balancing verification",
+									"pm.globals.set('echo2_server', jsonData.metadata.server_id);",
+									"",
+									"// Check if load balancing is working",
+									"const server1 = pm.globals.get('echo1_server');",
+									"const server2 = jsonData.metadata.server_id;",
+									"",
+									"if (server1 && server2) {",
+									"    pm.test(`Load balancing check: Server 1: ${server1}, Server 2: ${server2}`, function () {",
+									"        // This test always passes but shows server distribution",
+									"        pm.expect(true).to.be.true;",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Load Balance Test 2\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools/echo/invoke",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"echo",
+								"invoke"
+							]
+						},
+						"description": "🔄 Second echo request to show how requests are distributed across different MCP servers."
+					},
+					"response": []
+				},
+				{
+					"name": "Echo Test 3 (Load Balancing)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Echo request 3 successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"pm.test(\"Echo response contains metadata\", function () {",
+									"    pm.expect(jsonData).to.have.property('metadata');",
+									"    pm.expect(jsonData.metadata).to.have.property('server_id');",
+									"});",
+									"",
+									"// Show final load balancing summary",
+									"const server1 = pm.globals.get('echo1_server');",
+									"const server2 = pm.globals.get('echo2_server');",
+									"const server3 = jsonData.metadata.server_id;",
+									"",
+									"pm.test(`🔄 Load Balancing Summary - S1: ${server1}, S2: ${server2}, S3: ${server3}`, function () {",
+									"    pm.expect(true).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Load Balance Test 3\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools/echo/invoke",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"echo",
+								"invoke"
+							]
+						},
+						"description": "🔄 Third echo request to complete the load balancing demonstration across the multi-server architecture."
+					},
+					"response": []
+				}
+			],
+			"description": "🔄 MULTI-SERVER ARCHITECTURE: Demonstrate intelligent load balancing across multiple MCP servers with round-robin distribution."
+		},
+		{
+			"name": "🧪 Error Handling & Edge Cases",
+			"item": [
+				{
+					"name": "Test Non-Existent Tool",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Error handling for non-existent tool\", function () {",
+									"    // Should return error response, not crash",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 404, 500, 200]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"Error properly communicated in response\", function () {",
+									"        pm.expect(jsonData).to.have.property('success', false);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"test\": \"parameter\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/mcp/tools/nonexistent/invoke",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"mcp",
+								"tools",
+								"nonexistent",
+								"invoke"
+							]
+						},
+						"description": "🧪 Test error handling when requesting a tool that doesn't exist."
+					},
+					"response": []
+				},
+				{
+					"name": "Test Invalid JSON",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Invalid JSON handled gracefully\", function () {",
+									"    // Should return error response, not crash the server",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ invalid json structure"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"chat"
+							]
+						},
+						"description": "🧪 Test how the system handles malformed JSON requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Test AppleScript on Non-macOS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"AppleScript unavailability handled gracefully\", function () {",
+									"    // Should either work (on macOS) or return appropriate error (other platforms)",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+									"});",
+									"",
+									"if (pm.response.code === 400) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"Clear error message for unavailable AppleScript\", function () {",
+									"        pm.expect(jsonData).to.have.property('success', false);",
+									"        pm.expect(jsonData.message).to.include('not available');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/applescript/battery",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"applescript",
+								"battery"
+							]
+						},
+						"description": "🧪 Test graceful handling when AppleScript is not available (non-macOS platforms)."
+					},
+					"response": []
+				}
+			],
+			"description": "🧪 ROBUST ERROR HANDLING: Verify the system handles errors gracefully without crashing."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set default base URL if not already set",
+					"if (!pm.globals.get('baseUrl')) {",
+					"    pm.globals.set('baseUrl', 'http://localhost:8080');",
+					"}",
+					"",
+					"// Add timestamp to requests for uniqueness",
+					"pm.globals.set('timestamp', new Date().getTime());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test for response time",
+					"pm.test('Response time is reasonable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

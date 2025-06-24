@@ -23,6 +23,7 @@ public class ChatService {
     private final EchoFunction echoFunction;
     private final PingFunction pingFunction;
     private final SearchFunction searchFunction;
+    private final AppleScriptService appleScriptService;
 
     public String chat(String userMessage) {
         log.debug("Processing chat message: {}", userMessage);
@@ -74,6 +75,12 @@ public class ChatService {
             systemMessage.append("\n- Search Tool: Can search the web for current information, news, research papers, documentation");
             systemMessage.append("\n- Echo Tool: Can echo back text with optional formatting (uppercase, lowercase, reverse)");
             systemMessage.append("\n- Ping Tool: Can test connectivity and get server timestamps");
+            
+            // Add AppleScript capabilities if available
+            if (appleScriptService.isAppleScriptAvailable()) {
+                systemMessage.append("\n- AppleScript Tool: Can control macOS system functions, get battery status, show notifications, control volume, open applications");
+                systemMessage.append("\n- Filesystem Tool: Can read/write files and browse directories on the local system");
+            }
             
             systemMessage.append("\n\nWhen users ask about:");
             systemMessage.append("\n• Current events, recent news, or developments");
@@ -132,6 +139,11 @@ public class ChatService {
         // Detect ping requests
         if (lowerMessage.contains("ping") || lowerMessage.contains("test connection")) {
             return handlePingRequest(userMessage);
+        }
+        
+        // Detect AppleScript requests
+        if (isAppleScriptRequest(lowerMessage)) {
+            return handleAppleScriptRequest(userMessage);
         }
         
         return null; // No tool usage detected
@@ -534,5 +546,176 @@ public class ChatService {
         }
         
         return result.toString();
+    }
+    
+    /**
+     * Determine if user message is requesting AppleScript functionality.
+     */
+    private boolean isAppleScriptRequest(String lowerMessage) {
+        // Keywords that suggest AppleScript/system control requests
+        String[] appleScriptKeywords = {
+            "battery", "battery status", "show notification", "notification", "volume", "set volume",
+            "get volume", "system info", "system information", "open app", "open application",
+            "battery level", "system status", "mac", "macos", "applescript"
+        };
+        
+        for (String keyword : appleScriptKeywords) {
+            if (lowerMessage.contains(keyword)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Handle AppleScript requests by determining the specific operation and delegating to AppleScriptService.
+     */
+    private String handleAppleScriptRequest(String userMessage) {
+        if (!appleScriptService.isAppleScriptAvailable()) {
+            return "I'd love to help with system control, but AppleScript MCP is not available. " +
+                   "Make sure you're running on macOS and the AppleScript MCP server is configured.";
+        }
+        
+        try {
+            String lowerMessage = userMessage.toLowerCase();
+            
+            // Battery status requests
+            if (lowerMessage.contains("battery")) {
+                String result = appleScriptService.getBatteryStatus();
+                return "I checked your Mac's battery status:\n\n" + result;
+            }
+            
+            // Notification requests
+            if (lowerMessage.contains("notification") || lowerMessage.contains("notify")) {
+                String title = extractNotificationTitle(userMessage);
+                String message = extractNotificationMessage(userMessage);
+                String result = appleScriptService.showNotification(title, message);
+                return "I sent a notification to your Mac:\n\n" + result;
+            }
+            
+            // Volume control requests
+            if (lowerMessage.contains("volume")) {
+                if (lowerMessage.contains("set") || lowerMessage.contains("change")) {
+                    int volume = extractVolumeLevel(userMessage);
+                    String result = appleScriptService.setVolume(volume);
+                    return "I adjusted your Mac's volume:\n\n" + result;
+                } else {
+                    String result = appleScriptService.getVolume();
+                    return "I checked your Mac's volume level:\n\n" + result;
+                }
+            }
+            
+            // System info requests
+            if (lowerMessage.contains("system info") || lowerMessage.contains("system information")) {
+                String result = appleScriptService.getSystemInfo();
+                return "I gathered your Mac's system information:\n\n" + result;
+            }
+            
+            // Application opening requests
+            if (lowerMessage.contains("open app") || lowerMessage.contains("open application")) {
+                String appName = extractApplicationName(userMessage);
+                String result = appleScriptService.openApplication(appName);
+                return "I tried to open the application:\n\n" + result;
+            }
+            
+            // Generic AppleScript mention
+            return "I can help you control your Mac using AppleScript! I can:\n" +
+                   "• Check battery status\n" +
+                   "• Show notifications\n" +
+                   "• Control volume\n" +
+                   "• Get system information\n" +
+                   "• Open applications\n\n" +
+                   "Just ask me something like 'What's my battery status?' or 'Show me a notification'";
+            
+        } catch (Exception e) {
+            log.error("Error handling AppleScript request", e);
+            return "I encountered an error while trying to control your Mac: " + e.getMessage();
+        }
+    }
+    
+    private String extractNotificationTitle(String userMessage) {
+        // Try to extract title from patterns like "show notification 'title' 'message'"
+        if (userMessage.contains("'") || userMessage.contains("\"")) {
+            // Handle quoted strings
+            String[] parts = userMessage.split("['\"]");
+            if (parts.length >= 2) {
+                return parts[1];
+            }
+        }
+        return "Spring AI MCP Demo";
+    }
+    
+    private String extractNotificationMessage(String userMessage) {
+        // Try to extract message from patterns
+        if (userMessage.contains("'") || userMessage.contains("\"")) {
+            String[] parts = userMessage.split("['\"]");
+            if (parts.length >= 4) {
+                return parts[3];
+            } else if (parts.length >= 2) {
+                return parts[1];
+            }
+        }
+        
+        // Extract text after "notification" keyword
+        String lowerMessage = userMessage.toLowerCase();
+        int notifyIndex = lowerMessage.indexOf("notification");
+        if (notifyIndex >= 0) {
+            String remainder = userMessage.substring(notifyIndex + 12).trim();
+            if (!remainder.isEmpty()) {
+                return remainder;
+            }
+        }
+        
+        return "Hello from Spring AI MCP!";
+    }
+    
+    private int extractVolumeLevel(String userMessage) {
+        // Try to extract number from the message
+        String[] words = userMessage.split("\\s+");
+        for (String word : words) {
+            try {
+                int volume = Integer.parseInt(word.replaceAll("[^0-9]", ""));
+                return Math.max(0, Math.min(100, volume));
+            } catch (NumberFormatException e) {
+                // Continue looking
+            }
+        }
+        return 50; // Default volume
+    }
+    
+    private String extractApplicationName(String userMessage) {
+        String lowerMessage = userMessage.toLowerCase();
+        
+        // Common applications
+        if (lowerMessage.contains("finder")) return "Finder";
+        if (lowerMessage.contains("safari")) return "Safari";
+        if (lowerMessage.contains("chrome")) return "Google Chrome";
+        if (lowerMessage.contains("firefox")) return "Firefox";
+        if (lowerMessage.contains("terminal")) return "Terminal";
+        if (lowerMessage.contains("calculator")) return "Calculator";
+        if (lowerMessage.contains("calendar")) return "Calendar";
+        if (lowerMessage.contains("mail")) return "Mail";
+        if (lowerMessage.contains("notes")) return "Notes";
+        if (lowerMessage.contains("music")) return "Music";
+        if (lowerMessage.contains("photos")) return "Photos";
+        
+        // Try to extract app name after "open"
+        int openIndex = lowerMessage.indexOf("open");
+        if (openIndex >= 0) {
+            String remainder = userMessage.substring(openIndex + 4).trim();
+            if (remainder.startsWith("app ")) {
+                remainder = remainder.substring(4).trim();
+            }
+            if (remainder.startsWith("application ")) {
+                remainder = remainder.substring(12).trim();
+            }
+            if (!remainder.isEmpty()) {
+                // Capitalize first letter
+                return remainder.substring(0, 1).toUpperCase() + remainder.substring(1);
+            }
+        }
+        
+        return "Finder"; // Default application
     }
 }
