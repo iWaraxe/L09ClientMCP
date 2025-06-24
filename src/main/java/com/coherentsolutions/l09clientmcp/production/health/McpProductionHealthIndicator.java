@@ -24,8 +24,8 @@ import java.util.Map;
  * - System health aggregation
  * - Operational health indicators
  */
-// Temporarily disabled until Actuator dependency issue is resolved
-//@Component
+// Temporarily disabled due to missing Actuator dependency
+// @Component
 @ConditionalOnProperty(
     name = "spring.ai.mcp.production.enabled", 
     havingValue = "true"
@@ -37,7 +37,7 @@ public class McpProductionHealthIndicator { // implements HealthIndicator {
     private final ProductionMcpClientService productionClient;
     
     // @Override
-    public Object health() { // Health health() {
+    public Map<String, Object> health() {
         try {
             // Perform comprehensive health check
             ProductionMcpClientService.ProductionHealthCheck healthCheck = 
@@ -47,17 +47,17 @@ public class McpProductionHealthIndicator { // implements HealthIndicator {
                     productionClient.getProductionStatistics();
             
             // Determine overall health status
-            // Health.Builder healthBuilder = healthCheck.overallHealthy() ? 
-            //         Health.up() : Health.down();
-            
-            // Return simple health object for now
+            // Return comprehensive health information
             return Map.of(
                     "status", healthCheck.overallHealthy() ? "UP" : "DOWN",
                     "details", Map.of(
                             "multiServer", healthCheck.multiServerHealthy(),
                             "rateLimit", healthCheck.rateLimitHealthy(),
                             "performance", healthCheck.performanceHealthy(),
-                            "tracing", healthCheck.tracingHealthy()
+                            "tracing", healthCheck.tracingHealthy(),
+                            "environment", stats.environment(),
+                            "totalRequests", stats.totalRequests(),
+                            "successRate", String.format("%.2f%%", stats.successRate() * 100)
                     )
             );
             

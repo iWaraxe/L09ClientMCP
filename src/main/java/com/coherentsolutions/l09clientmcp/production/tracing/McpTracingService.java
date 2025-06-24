@@ -53,7 +53,7 @@ public class McpTracingService {
                                              String.valueOf(entry.getValue())));
         }
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             log.debug("Starting traced tool invocation: tool={}, server={}, traceId={}", 
                      toolName, serverId, span.context().traceId());
             
@@ -97,7 +97,7 @@ public class McpTracingService {
                 .tag("operation.type", "server_selection")
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             log.debug("Starting traced server selection: tool={}, strategy={}, candidates={}, traceId={}", 
                      toolName, strategy, candidateCount, span.context().traceId());
             
@@ -132,7 +132,7 @@ public class McpTracingService {
                 .tag("operation.type", "health_check")
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             log.debug("Starting traced health check: server={}, traceId={}", 
                      serverId, span.context().traceId());
             
@@ -169,7 +169,7 @@ public class McpTracingService {
                 .tag("operation.type", "circuit_breaker_execution")
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             log.debug("Starting traced circuit breaker execution: server={}, state={}, traceId={}", 
                      serverId, currentState, span.context().traceId());
             
@@ -214,7 +214,7 @@ public class McpTracingService {
                 .tag("operation.type", "retry_attempt")
                 .start();
         
-        try (Tracer.SpanInScope ws = tracer.withSpanInScope(span)) {
+        try (Tracer.SpanInScope ws = tracer.withSpan(span)) {
             log.debug("Starting traced retry attempt: operation={}, server={}, attempt={}, reason={}, traceId={}", 
                      operation, serverId, attemptNumber, reason, span.context().traceId());
             

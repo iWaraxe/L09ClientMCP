@@ -72,15 +72,15 @@ public class McpMetricsCollector {
                 .tag("component", "circuit-breaker")
                 .register(meterRegistry);
         
-        this.activeConnectionsGauge = Gauge.builder("mcp.connections.active")
+        this.activeConnectionsGauge = Gauge.builder("mcp.connections.active", activeConnections, AtomicLong::doubleValue)
                 .description("Number of active MCP server connections")
                 .tag("component", "connection-pool")
-                .register(meterRegistry, activeConnections, AtomicLong::get);
+                .register(meterRegistry);
         
-        this.healthyServersGauge = Gauge.builder("mcp.servers.healthy")
+        this.healthyServersGauge = Gauge.builder("mcp.servers.healthy", healthyServers, AtomicLong::doubleValue)
                 .description("Number of healthy MCP servers")
                 .tag("component", "health-monitor")
-                .register(meterRegistry, healthyServers, AtomicLong::get);
+                .register(meterRegistry);
         
         this.serverResponseTimer = Timer.builder("mcp.server.response")
                 .description("Server response time")
@@ -122,24 +122,28 @@ public class McpMetricsCollector {
      */
     public void recordToolInvocation(String toolName, String serverId, Duration duration, 
                                    boolean success, int requestSize, int responseSize) {
-        Timer.Sample sample = Timer.start(meterRegistry);
-        sample.stop(Timer.builder("mcp.tool.invocation")
+        // Record the duration using the existing timer
+        toolInvocationTimer.record(duration);
+        
+        // Increment counter with tags
+        Counter.builder("mcp.tool.invocation.total")
                 .tag("tool", toolName)
                 .tag("server", serverId)
                 .tag("success", String.valueOf(success))
                 .tag("component", "tool-execution")
-                .register(meterRegistry));
+                .register(meterRegistry)
+                .increment();
         
-        toolInvocationCounter.increment(
-                Tags.of(
-                        "tool", toolName,
-                        "server", serverId,
-                        "success", String.valueOf(success)
-                )
-        );
+        // Record distribution metrics
+        DistributionSummary.builder("mcp.request.size")
+                .tag("tool", toolName)
+                .register(meterRegistry)
+                .record(requestSize);
         
-        requestSizeDistribution.record(requestSize, Tags.of("tool", toolName));
-        responseSizeDistribution.record(responseSize, Tags.of("tool", toolName));
+        DistributionSummary.builder("mcp.response.size")
+                .tag("tool", toolName)
+                .register(meterRegistry)
+                .record(responseSize);
         
         if (!success) {
             recordFailure("tool_invocation", toolName, serverId, "execution_failed");
@@ -154,14 +158,13 @@ public class McpMetricsCollector {
      */
     public void recordServerSelection(String toolName, String selectedServerId, 
                                     String strategy, int candidateCount) {
-        serverSelectionCounter.increment(
-                Tags.of(
-                        "tool", toolName,
-                        "server", selectedServerId,
-                        "strategy", strategy,
-                        "candidates", String.valueOf(candidateCount)
-                )
-        );
+        Counter.builder("mcp.server.selection.total")
+                .tag("tool", toolName)
+                .tag("server", selectedServerId)
+                .tag("strategy", strategy)
+                .tag("candidates", String.valueOf(candidateCount))
+                .register(meterRegistry)
+                .increment();
         
         log.debug("Recorded server selection: tool={}, server={}, strategy={}, candidates={}", 
                  toolName, selectedServerId, strategy, candidateCount);
@@ -172,14 +175,13 @@ public class McpMetricsCollector {
      */
     public void recordCircuitBreakerEvent(String serverId, String event, String previousState, 
                                         String newState) {
-        circuitBreakerEventsCounter.increment(
-                Tags.of(
-                        "server", serverId,
-                        "event", event,
-                        "previous_state", previousState,
-                        "new_state", newState
-                )
-        );
+        Counter.builder("mcp.circuit.breaker.events.total")
+                .tag("server", serverId)
+                .tag("event", event)
+                .tag("previous_state", previousState)
+                .tag("new_state", newState)
+                .register(meterRegistry)
+                .increment();
         
         log.info("Circuit breaker event: server={}, event={}, {} -> {}", 
                 serverId, event, previousState, newState);
@@ -189,26 +191,24 @@ public class McpMetricsCollector {
      * Record server response time.
      */
     public void recordServerResponse(String serverId, Duration responseTime, boolean success) {
-        serverResponseTimer.record(responseTime, 
-                Tags.of(
-                        "server", serverId,
-                        "success", String.valueOf(success)
-                )
-        );
+        Timer.builder("mcp.server.response")
+                .tag("server", serverId)
+                .tag("success", String.valueOf(success))
+                .register(meterRegistry)
+                .record(responseTime);
     }
     
     /**
      * Record failure with categorization.
      */
     public void recordFailure(String category, String operation, String serverId, String reason) {
-        failureCounter.increment(
-                Tags.of(
-                        "category", category,
-                        "operation", operation,
-                        "server", serverId,
-                        "reason", reason
-                )
-        );
+        Counter.builder("mcp.failures.total")
+                .tag("category", category)
+                .tag("operation", operation)
+                .tag("server", serverId)
+                .tag("reason", reason)
+                .register(meterRegistry)
+                .increment();
         
         log.warn("Failure recorded: category={}, operation={}, server={}, reason={}", 
                 category, operation, serverId, reason);
@@ -218,14 +218,13 @@ public class McpMetricsCollector {
      * Record retry attempt.
      */
     public void recordRetry(String operation, String serverId, int attemptNumber, String reason) {
-        retryCounter.increment(
-                Tags.of(
-                        "operation", operation,
-                        "server", serverId,
-                        "attempt", String.valueOf(attemptNumber),
-                        "reason", reason
-                )
-        );
+        Counter.builder("mcp.retries.total")
+                .tag("operation", operation)
+                .tag("server", serverId)
+                .tag("attempt", String.valueOf(attemptNumber))
+                .tag("reason", reason)
+                .register(meterRegistry)
+                .increment();
         
         log.debug("Retry recorded: operation={}, server={}, attempt={}, reason={}", 
                  operation, serverId, attemptNumber, reason);
@@ -235,11 +234,11 @@ public class McpMetricsCollector {
      * Record health check execution.
      */
     public void recordHealthCheck(String serverId, Duration duration, boolean healthy) {
-        Timer.Sample sample = Timer.start(meterRegistry);
-        sample.stop(Timer.builder("mcp.health.check")
+        Timer.builder("mcp.health.check")
                 .tag("server", serverId)
                 .tag("healthy", String.valueOf(healthy))
-                .register(meterRegistry));
+                .register(meterRegistry)
+                .record(duration);
         
         log.debug("Health check recorded: server={}, duration={}ms, healthy={}", 
                  serverId, duration.toMillis(), healthy);

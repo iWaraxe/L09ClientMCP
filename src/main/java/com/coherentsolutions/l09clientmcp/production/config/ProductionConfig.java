@@ -109,6 +109,10 @@ public class ProductionConfig {
         @Valid
         private HealthConfig health = new HealthConfig();
         
+        public boolean isEnabled() {
+            return enabled;
+        }
+        
         @Data
         public static class MetricsConfig {
             @NotNull
@@ -148,6 +152,10 @@ public class ProductionConfig {
             @Min(1)
             @Max(10)
             private int retryAttempts = 3;
+            
+            public boolean isEnabled() {
+                return enabled;
+            }
         }
     }
     
@@ -182,6 +190,10 @@ public class ProductionConfig {
                 "session.id",
                 "request.id"
         );
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
     }
     
     @Data
@@ -201,6 +213,10 @@ public class ProductionConfig {
          */
         @Valid
         private Map<String, RetryPolicyConfig> toolPolicies = new HashMap<>();
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
         
         @Data
         public static class RetryPolicyConfig {
@@ -270,6 +286,14 @@ public class ProductionConfig {
          */
         @NotNull
         private Boolean adaptive = true;
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
+        
+        public boolean isAdaptive() {
+            return adaptive;
+        }
     }
     
     @Data
@@ -289,6 +313,10 @@ public class ProductionConfig {
          */
         @Valid
         private AuthzConfig authz = new AuthzConfig();
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
         
         @Data
         public static class AuthConfig {
@@ -357,6 +385,10 @@ public class ProductionConfig {
             
             @NotNull
             private Duration expireAfterAccess = Duration.ofMinutes(2);
+            
+            public boolean isEnabled() {
+                return enabled;
+            }
         }
         
         @Data
@@ -407,6 +439,10 @@ public class ProductionConfig {
          */
         @NotNull
         private Duration retentionPeriod = Duration.ofDays(90);
+        
+        public boolean isEnabled() {
+            return enabled;
+        }
     }
     
     @Data
@@ -493,5 +529,12 @@ public class ProductionConfig {
     
     public boolean isStaging() {
         return "staging".equalsIgnoreCase(environment) || "stage".equalsIgnoreCase(environment);
+    }
+    
+    /**
+     * Check if production features are enabled.
+     */
+    public boolean isEnabled() {
+        return enabled;
     }
 }
